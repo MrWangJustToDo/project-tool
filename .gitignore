@@ -1,5 +1,4 @@
 node_modules
-dist
 __test__
 .eslintcache
 .stylelintcache

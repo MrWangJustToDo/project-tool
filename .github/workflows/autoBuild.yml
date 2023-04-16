@@ -1,0 +1,41 @@
+name: auto build project-tool when push code
+
+on:
+  push:
+    branches:
+      - main
+  
+  workflow_dispatch:
+
+jobs:
+  deployment:
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      content: write
+
+    steps:
+      - name: checkout branch
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: install pnpm
+        uses: pnpm/action-setup@v2
+
+      - name: setup node version
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      
+      - name: prepare
+        run: |
+          pnpm install
+          pnpm run build:packages
+      
+      - name: auto commit 
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: auto-commit file change

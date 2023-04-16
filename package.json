@@ -34,7 +34,6 @@
     "lint:fix": "pnpm run lint --fix",
     "style": "stylelint --cache \"packages/**/*.(scss|css)\"",
     "style:fix": "pnpm run style --fix",
-    "install": "pnpm run clean & pnpm run build:packages",
     "prettier": "prettier --ignore-path .prettierignore --write .",
     "clean": "pnpm exec rm -rf dist dev",
     "purge": "pnpm exec rm -rf node_modules"
@@ -93,7 +92,7 @@
       ]
     }
   ],
-  "dependencies": {
+  "devDependencies": {
     "@rollup/plugin-commonjs": "^24.1.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-replace": "^5.0.2",
