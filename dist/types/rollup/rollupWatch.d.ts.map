@@ -1,0 +1,1 @@
+{"version":3,"file":"rollupWatch.d.ts","sourceRoot":"","sources":["../../../packages/rollup/rollupWatch.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAQ,QAAQ,EAAE,MAAM,QAAQ,CAAC;AA6B7C,wBAAsB,WAAW,CAAC,YAAY,EAAE,QAAQ,GAAG,OAAO,CAAC,IAAI,CAAC,CAAC;AACzE,wBAAsB,WAAW,CAAC,YAAY,EAAE;IAAE,IAAI,EAAE,QAAQ,CAAC;IAAC,KAAK,EAAE,MAAM,CAAA;CAAE,GAAG,OAAO,CAAC,IAAI,CAAC,CAAC"}
