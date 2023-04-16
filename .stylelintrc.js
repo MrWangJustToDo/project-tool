@@ -1,3 +1,3 @@
-const { stylelint } = require("./main");
+const stylelint = require("./styleLint");
 
 module.exports = stylelint;

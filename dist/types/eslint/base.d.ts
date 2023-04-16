@@ -1,3 +1,4 @@
 import type { ESLint } from "eslint";
-export declare const base: ESLint.ConfigData;
+declare const baseLint: ESLint.ConfigData;
+export default baseLint;
 //# sourceMappingURL=base.d.ts.map

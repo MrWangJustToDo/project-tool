@@ -1,6 +1,6 @@
 import type { Config } from "stylelint";
 
-export const stylelint: Config = {
+const stylelint: Config = {
   extends: ["stylelint-config-standard", "stylelint-config-standard-scss"],
   plugins: ["stylelint-order", "stylelint-prettier", "stylelint-scss"],
   ignoreFiles: ["**/*.js", "**/*.ts", "**/*.jsx", "**/*.tsx", "**/*.json", "**/*.html"],
@@ -46,3 +46,5 @@ export const stylelint: Config = {
     "order/properties-order": ["width", "height"],
   },
 };
+
+export default stylelint;

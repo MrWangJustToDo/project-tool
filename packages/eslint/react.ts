@@ -1,6 +1,6 @@
 import type { ESLint } from "eslint";
 
-export const react: ESLint.ConfigData = {
+const reactLint: ESLint.ConfigData = {
   parser: "@typescript-eslint/parser",
   extends: [
     "plugin:react/recommended", // React rules
@@ -27,3 +27,5 @@ export const react: ESLint.ConfigData = {
     "jsx-a11y/anchor-is-valid": "off",
   },
 };
+
+export default reactLint;

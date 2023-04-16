@@ -1,6 +1,6 @@
 import type { ESLint } from "eslint";
 
-export const base: ESLint.ConfigData = {
+const baseLint: ESLint.ConfigData = {
   parser: "@typescript-eslint/parser",
   plugins: ["@typescript-eslint", "prettier", "import"],
   extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:import/recommended", "plugin:import/typescript", "prettier"],
@@ -60,3 +60,5 @@ export const base: ESLint.ConfigData = {
     },
   },
 };
+
+export default baseLint;

@@ -14,15 +14,23 @@
     "request.js"
   ],
   "exports": {
-    "./build": {
-      "default": "./build.js",
+    "./rollup": {
+      "default": "./rollup.js",
       "types": "./dist/types/build.d.ts"
     },
-    "./lint.js": {
-      "default": "./lint.js",
-      "types": "./dist/types/lint.d.ts"
+    "./baseLint": {
+      "default": "./baseLint.js",
+      "types": "./dist/types/eslint/base.d.ts"
     },
-    "./request.js": {
+    "./reactLint": {
+      "default": "./reactLint.js",
+      "types": "./dist/types/eslint/react.d.ts"
+    },
+    "./styleLint": {
+      "default": "./styleLint.js",
+      "types": "./dist/types/stylelint/index.d.ts"
+    },
+    "./request": {
       "default": "./request.js",
       "types": "./dist/types/request.d.ts"
     }
@@ -40,18 +48,34 @@
   },
   "buildOptions": [
     {
-      "input": "./packages/lint.ts",
+      "input": "./packages/eslint/base.ts",
       "output": [
         {
           "dir": "./dist",
-          "entryFileNames": "cjs/lint.js",
+          "entryFileNames": "cjs/base.js",
           "format": "cjs",
           "sourcemap": true
-        },
+        }
+      ]
+    },
+    {
+      "input": "./packages/eslint/react.ts",
+      "output": [
         {
           "dir": "./dist",
-          "entryFileNames": "esm/lint.js",
-          "format": "esm",
+          "entryFileNames": "cjs/react.js",
+          "format": "cjs",
+          "sourcemap": true
+        }
+      ]
+    },
+    {
+      "input": "./packages/stylelint/index.ts",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "cjs/style.js",
+          "format": "cjs",
           "sourcemap": true
         }
       ]

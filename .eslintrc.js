@@ -1,3 +1,3 @@
-const { base } = require("./lint");
+const base = require("./baseLint");
 
 module.exports = base;

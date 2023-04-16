@@ -1,3 +1,4 @@
 import type { Config } from "stylelint";
-export declare const stylelint: Config;
+declare const stylelint: Config;
+export default stylelint;
 //# sourceMappingURL=index.d.ts.map
