@@ -1,0 +1,7 @@
+**/node_modules
+**/dist
+**/dev
+**/bundle
+**/*.js
+__test__
+pnpm-lock.yaml

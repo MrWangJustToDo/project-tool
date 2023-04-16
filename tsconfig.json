@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "rootDir": "./packages",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "types": ["node"]
+  },
+  "ts-node": {
+    "swc": true
+  }
+}

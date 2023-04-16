@@ -1,0 +1,131 @@
+{
+  "version": "0.1.0",
+  "license": "MIT",
+  "name": "project-tool",
+  "description": "a tool project to help build other project",
+  "author": "MrWangJustToDo",
+  "engines": {
+    "node": ">=10"
+  },
+  "files": [
+    "dist",
+    "lint.js",
+    "build.js",
+    "request.js"
+  ],
+  "exports": {
+    "./build": {
+      "default": "./build.js",
+      "types": "./dist/types/build.d.ts"
+    },
+    "./lint.js": {
+      "default": "./lint.js",
+      "types": "./dist/types/lint.d.ts"
+    },
+    "./request.js": {
+      "default": "./request.js",
+      "types": "./dist/types/request.d.ts"
+    }
+  },
+  "packageManager": "pnpm@7.5.0",
+  "scripts": {
+    "build:packages": "ts-node ./packages/_prepare.ts",
+    "lint": "eslint --cache --ext ts,tsx .",
+    "lint:fix": "pnpm run lint --fix",
+    "style": "stylelint --cache \"packages/**/*.(scss|css)\"",
+    "style:fix": "pnpm run style --fix",
+    "install": "pnpm run clean & pnpm run build:packages",
+    "preinstall": "pnpm run clean && pnpm run build:packages",
+    "prettier": "prettier --ignore-path .prettierignore --write .",
+    "clean": "pnpm exec rm -rf dist dev",
+    "purge": "pnpm exec rm -rf node_modules"
+  },
+  "buildOptions": [
+    {
+      "input": "./packages/lint.ts",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "cjs/lint.js",
+          "format": "cjs",
+          "sourcemap": true
+        },
+        {
+          "dir": "./dist",
+          "entryFileNames": "esm/lint.js",
+          "format": "esm",
+          "sourcemap": true
+        }
+      ]
+    },
+    {
+      "input": "./packages/build.ts",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "cjs/build.js",
+          "format": "cjs",
+          "sourcemap": true
+        },
+        {
+          "dir": "./dist",
+          "entryFileNames": "esm/build.js",
+          "format": "esm",
+          "sourcemap": true
+        }
+      ]
+    },
+    {
+      "input": "./packages/request.ts",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "cjs/request.js",
+          "format": "cjs",
+          "multiple": true,
+          "sourcemap": true
+        },
+        {
+          "dir": "./dist",
+          "entryFileNames": "esm/request.js",
+          "format": "esm",
+          "sourcemap": true
+        }
+      ]
+    }
+  ],
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.1.0",
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "@rollup/plugin-replace": "^5.0.2",
+    "@rollup/plugin-terser": "^0.4.1",
+    "@swc/core": "^1.3.50",
+    "@types/eslint": "^8.37.0",
+    "@types/lodash": "^4.14.194",
+    "@types/node": "^18.15.11",
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "@typescript-eslint/parser": "^5.58.0",
+    "axios": "^0.27.2",
+    "eslint": "^8.38.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-import-resolver-typescript": "^3.5.5",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "lodash": "^4.17.21",
+    "prettier": "^2.8.4",
+    "rollup": "^3.20.2",
+    "rollup-plugin-typescript2": "^0.34.1",
+    "stylelint": "^15.5.0",
+    "stylelint-config-standard": "^33.0.0",
+    "stylelint-config-standard-scss": "^8.0.0",
+    "stylelint-order": "^6.0.3",
+    "stylelint-prettier": "^3.0.0",
+    "stylelint-scss": "^4.6.0",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.5.0",
+    "typescript": "^4.7.4"
+  }
+}
