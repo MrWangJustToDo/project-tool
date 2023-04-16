@@ -120,7 +120,7 @@ const transformBuildOptions = (
       allOptions.singleOther = {
         ...options,
         output: singleOtherConfig,
-        external: (id) => id.includes("node_modules"),
+        external: (id) => id.includes("node_modules") && !id.endsWith("project-tool"),
         plugins: [
           nodeResolve(),
           commonjs({ exclude: "node_modules" }),
@@ -166,7 +166,7 @@ const transformBuildOptions = (
       allOptions.multipleOther = {
         ...options,
         output: multipleOtherConfig,
-        external: (id) => id.includes("node_modules"),
+        external: (id) => id.includes("node_modules") && !id.endsWith("project-tool"),
         plugins: [
           nodeResolve(),
           commonjs({ exclude: "node_modules" }),
