@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      content: write
+      contents: write
 
     steps:
       - name: checkout branch
