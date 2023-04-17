@@ -1,4 +1,4 @@
 "use strict";
 
-module.exports = require('@project-tool/axios');
+module.exports = require('./packages/axios');
 

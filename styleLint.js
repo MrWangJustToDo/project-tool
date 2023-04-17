@@ -1,6 +1,6 @@
 "use strict";
 
-const { stylelint } = require('@project-tool/stylelint')
+const { stylelint } = require('./packages/stylelint')
 
 module.exports = stylelint;
 

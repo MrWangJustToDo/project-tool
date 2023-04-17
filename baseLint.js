@@ -1,6 +1,6 @@
 "use strict";
 
-const { baseLint } = require('@project-tool/eslint')
+const { baseLint } = require('./packages/eslint')
 
 module.exports = baseLint;
 

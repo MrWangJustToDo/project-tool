@@ -1,3 +1,3 @@
 "use strict";
 
-module.exports = require("@project-tool/rollup");
+module.exports = require('./packages/rollup');

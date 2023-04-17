@@ -1,3 +1,3 @@
-import { rollupBuild, rollupWatch } from "@project-tool/rollup";
+import { rollupBuild, rollupWatch } from "./packages/rollup";
 
 export { rollupBuild, rollupWatch };
