@@ -33,6 +33,7 @@ jobs:
       - name: prepare
         run: |
           pnpm install
+          pnpm run clean
           pnpm run build:packages
       
       - name: auto commit 
