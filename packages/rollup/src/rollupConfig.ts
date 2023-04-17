@@ -201,6 +201,7 @@ const transformBuildOptions = (
               ? {}
               : {
                   __DEV__: mode === "development",
+                  ["process.env.NODE_ENV"]: JSON.stringify(mode),
                   __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
                   preventAssignment: true,
                 }
