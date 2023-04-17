@@ -175,7 +175,7 @@ const transformBuildOptions = (
             packageFileObject["name"] === "@project-tool/rollup"
               ? {}
               : {
-                  __DEV__: 'process.env.NODE_ENV === "development"',
+                  __DEV__: mode === "development",
                   __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
                   preventAssignment: true,
                 }
@@ -200,7 +200,7 @@ const transformBuildOptions = (
             packageFileObject["name"] === "@project-tool/rollup"
               ? {}
               : {
-                  __DEV__: 'process.env.NODE_ENV === "development"',
+                  __DEV__: mode === "development",
                   __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
                   preventAssignment: true,
                 }
