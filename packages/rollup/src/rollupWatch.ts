@@ -32,14 +32,14 @@ const watch = (packageName: string, rollupOptions: RollupOptions, mode: string, 
   });
 };
 
-export async function rollupWatch(_packageName: Packages): Promise<void>;
-export async function rollupWatch(_packageName: { name: Packages; alias: string }): Promise<void>;
-export async function rollupWatch(_packageName: Packages | { name: Packages; alias: string }) {
+export async function rollupWatch(_packageName: Packages, packageScope?: string): Promise<void>;
+export async function rollupWatch(_packageName: { name: Packages; alias: string }, packageScope?: string): Promise<void>;
+export async function rollupWatch(_packageName: Packages | { name: Packages; alias: string }, packageScope?: string) {
   const packageName = typeof _packageName === "string" ? _packageName : _packageName.name;
 
   const aliasName = typeof _packageName === "string" ? _packageName : _packageName.alias;
 
-  const { singleOther, multipleDevOther, multipleDevUMD } = await getRollupConfigs(packageName);
+  const { singleOther, multipleDevOther, multipleDevUMD } = await getRollupConfigs(packageName, packageScope);
 
   singleOther.forEach((config) => watch(aliasName, config, "process.env", "cjs/esm"));
 
