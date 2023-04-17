@@ -136,6 +136,7 @@ var tsConfig = function (absolutePath, mode) {
     });
 };
 var transformBuildOptions = function (options, packageFileObject, absolutePath, mode, external) {
+    var _a;
     var allOptions = {};
     if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
         options.input = resolve(absolutePath, options.input);
@@ -234,11 +235,13 @@ var transformBuildOptions = function (options, packageFileObject, absolutePath, 
                     commonjs({ exclude: "node_modules" }),
                     replace(packageFileObject["name"] === "@project-tool/rollup"
                         ? {}
-                        : {
-                            __DEV__: mode === "development",
-                            __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                            preventAssignment: true,
-                        }),
+                        : (_a = {
+                                __DEV__: mode === "development"
+                            },
+                            _a["process.env.NODE_ENV"] = JSON.stringify(mode),
+                            _a.__VERSION__ = JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                            _a.preventAssignment = true,
+                            _a)),
                     tsConfig(absolutePath, mode),
                 ] });
         }
