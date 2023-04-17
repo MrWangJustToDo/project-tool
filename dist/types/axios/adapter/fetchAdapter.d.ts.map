@@ -1,1 +1,0 @@
-{"version":3,"file":"fetchAdapter.d.ts","sourceRoot":"","sources":["../../../../packages/axios/adapter/fetchAdapter.ts"],"names":[],"mappings":"AAQA,OAAO,KAAK,EAAgB,kBAAkB,EAAE,aAAa,EAAE,MAAM,OAAO,CAAC;AAQ7E,wBAAsB,YAAY,CAAC,MAAM,EAAE,kBAAkB,GAAG,OAAO,CAAC,aAAa,CAAC,OAAO,CAAC,CAAC,CAsB9F"}

@@ -1,4 +1,6 @@
 "use strict";
 
-module.exports = require("./dist/cjs/style");
+const { stylelint } = require('@project-tool/stylelint')
+
+module.exports = stylelint;
 

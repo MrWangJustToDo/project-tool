@@ -4,51 +4,35 @@
   "name": "project-tool",
   "description": "a tool project to help build other project",
   "author": "MrWangJustToDo",
-  "main": "./main.js",
-  "types": "./main.d.ts",
   "engines": {
     "node": ">=10"
   },
   "files": [
-    "dist",
-    "main.js",
-    "main.d.ts",
+    "packages",
     "rollup.js",
     "rollup.d.ts",
     "request.js",
     "request.d.ts",
     "baseLint.js",
-    "baseLint.d.ts",
     "reactLint.js",
-    "reactLint.d.ts",
-    "styleLint.js",
-    "styleLint.d.ts"
+    "styleLint.js"
   ],
   "exports": {
     "./rollup": {
       "default": "./rollup.js",
       "types": "./rollup.d.ts"
     },
-    "./baseLint": {
-      "default": "./baseLint.js",
-      "types": "./baseLint.d.ts"
-    },
-    "./reactLint": {
-      "default": "./reactLint.js",
-      "types": "./reactLint.d.ts"
-    },
-    "./styleLint": {
-      "default": "./styleLint.js",
-      "types": "./styleLint.d.ts"
-    },
     "./request": {
       "default": "./request.js",
       "types": "./request.d.ts"
-    }
+    },
+    "./baseLint": "./baseLint.js",
+    "./reactLint": "./reactLint.js",
+    "./styleLint": "./styleLint.js"
   },
   "packageManager": "pnpm@7.5.0",
   "scripts": {
-    "build:packages": "ts-node ./packages/_prepare.ts",
+    "build:packages": "ts-node ./build.ts",
     "lint": "eslint --cache --ext ts,tsx .",
     "lint:fix": "pnpm run lint --fix",
     "style": "stylelint --cache \"packages/**/*.(scss|css)\"",
@@ -57,77 +41,11 @@
     "clean": "pnpm exec rm -rf dist dev",
     "purge": "pnpm exec rm -rf node_modules"
   },
-  "buildOptions": [
-    {
-      "input": "./packages/eslint/base.ts",
-      "output": [
-        {
-          "dir": "./dist",
-          "entryFileNames": "cjs/base.js",
-          "format": "cjs",
-          "sourcemap": true
-        }
-      ]
-    },
-    {
-      "input": "./packages/eslint/react.ts",
-      "output": [
-        {
-          "dir": "./dist",
-          "entryFileNames": "cjs/react.js",
-          "format": "cjs",
-          "sourcemap": true
-        }
-      ]
-    },
-    {
-      "input": "./packages/stylelint/index.ts",
-      "output": [
-        {
-          "dir": "./dist",
-          "entryFileNames": "cjs/style.js",
-          "format": "cjs",
-          "sourcemap": true
-        }
-      ]
-    },
-    {
-      "input": "./packages/build.ts",
-      "output": [
-        {
-          "dir": "./dist",
-          "entryFileNames": "cjs/build.js",
-          "format": "cjs",
-          "sourcemap": true
-        },
-        {
-          "dir": "./dist",
-          "entryFileNames": "esm/build.js",
-          "format": "esm",
-          "sourcemap": true
-        }
-      ]
-    },
-    {
-      "input": "./packages/request.ts",
-      "output": [
-        {
-          "dir": "./dist",
-          "entryFileNames": "cjs/request.js",
-          "format": "cjs",
-          "multiple": true,
-          "sourcemap": true
-        },
-        {
-          "dir": "./dist",
-          "entryFileNames": "esm/request.js",
-          "format": "esm",
-          "sourcemap": true
-        }
-      ]
-    }
-  ],
   "devDependencies": {
+    "@project-tool/axios": "workspace: *",
+    "@project-tool/eslint": "workspace: *",
+    "@project-tool/rollup": "workspace: *",
+    "@project-tool/stylelint": "workspace: *",
     "@rollup/plugin-commonjs": "^24.1.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-replace": "^5.0.2",

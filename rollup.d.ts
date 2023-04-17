@@ -1,3 +1,3 @@
-import { rollupBuild, rollupWatch } from "./dist/types/rollup";
+import { rollupBuild, rollupWatch } from "@project-tool/rollup";
 
 export { rollupBuild, rollupWatch };

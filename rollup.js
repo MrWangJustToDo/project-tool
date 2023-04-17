@@ -1,3 +1,3 @@
 "use strict";
 
-module.exports = require("./dist/cjs/build");
+module.exports = require("@project-tool/rollup");

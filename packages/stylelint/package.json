@@ -1,0 +1,45 @@
+{
+  "name": "@project-tool/stylelint",
+  "version": "0.0.1",
+  "files": [
+    "dist",
+    "index.js"
+  ],
+  "main": "index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./index.js",
+      "import": "./dist/esm/index.js",
+      "default": "./index.js"
+    }
+  },
+  "buildOptions": {
+    "input": "./src/index.ts",
+    "output": [
+      {
+        "dir": "./dist",
+        "entryFileNames": "cjs/index.js",
+        "multiple": true,
+        "format": "cjs",
+        "sourcemap": true
+      },
+      {
+        "dir": "./dist",
+        "entryFileNames": "esm/index.js",
+        "format": "esm",
+        "sourcemap": true
+      }
+    ]
+  },
+  "devDependencies": {
+    "postcss": "^8.4.22",
+    "stylelint": "^15.5.0",
+    "stylelint-config-standard": "^33.0.0",
+    "stylelint-config-standard-scss": "^8.0.0",
+    "stylelint-order": "^6.0.3",
+    "stylelint-prettier": "^3.0.0",
+    "stylelint-scss": "^4.6.0"
+  }
+}

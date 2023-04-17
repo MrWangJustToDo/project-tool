@@ -1,0 +1,47 @@
+{
+  "name": "@project-tool/rollup",
+  "version": "0.0.1",
+  "files": [
+    "dist",
+    "index.js"
+  ],
+  "main": "index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./index.js",
+      "import": "./dist/esm/index.js",
+      "default": "./index.js"
+    }
+  },
+  "buildOptions": {
+    "input": "./src/index.ts",
+    "output": [
+      {
+        "dir": "./dist",
+        "entryFileNames": "cjs/index.js",
+        "multiple": true,
+        "format": "cjs",
+        "sourcemap": true
+      },
+      {
+        "dir": "./dist",
+        "entryFileNames": "esm/index.js",
+        "format": "esm",
+        "sourcemap": true
+      }
+    ]
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.194",
+    "@rollup/plugin-commonjs": "^24.1.0",
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "@rollup/plugin-replace": "^5.0.2",
+    "@rollup/plugin-terser": "^0.4.1",
+    "lodash": "^4.17.21",
+    "rollup": "^3.20.2",
+    "rollup-plugin-typescript2": "^0.34.1",
+    "typescript": "^4.7.4"
+  }
+}

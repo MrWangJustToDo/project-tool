@@ -1,12 +1,10 @@
 {
   "compilerOptions": {
     "strict": true,
-    "rootDir": "./packages",
+    "target": "ESNext",
+    "module": "CommonJS",
     "esModuleInterop": true,
     "moduleResolution": "node",
     "types": ["node"]
-  },
-  "ts-node": {
-    "swc": true
   }
 }

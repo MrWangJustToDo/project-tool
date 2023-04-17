@@ -1,1 +1,0 @@
-{"version":3,"file":"createRequest.d.ts","sourceRoot":"","sources":["../../../packages/axios/createRequest.ts"],"names":[],"mappings":"AAKA,OAAO,KAAK,EAAE,iBAAiB,EAA2C,MAAM,QAAQ,CAAC;AAQzF,iBAAS,aAAa,CAAC,EACrB,MAAc,EACd,OAAuB,EACvB,mBAAwB,EACxB,oBAAyB,EACzB,GAAG,WAAW,EACf,GAAE,iBAAsB,iCAiBxB;AAED,OAAO,EAAE,aAAa,EAAE,CAAC"}

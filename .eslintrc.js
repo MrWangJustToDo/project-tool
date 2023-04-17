@@ -1,3 +1,3 @@
 module.exports = {
-  extends: ['./baseLint']
+  extends: ['./baseLint.js']
 };

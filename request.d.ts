@@ -1,3 +1,3 @@
-import { FetchTimeOutError, generateFetchWithTimeout, createRequest } from "./dist/types/axios";
+import { FetchTimeOutError, generateFetchWithTimeout, createRequest } from "@project-tool/axios";
 
 export { FetchTimeOutError, generateFetchWithTimeout, createRequest };

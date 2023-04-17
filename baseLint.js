@@ -1,4 +1,6 @@
 "use strict";
 
-module.exports = require("./dist/cjs/base");
+const { baseLint } = require('@project-tool/eslint')
+
+module.exports = baseLint;
 
