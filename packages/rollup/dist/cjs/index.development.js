@@ -186,11 +186,11 @@ var transformBuildOptions = function (options, packageFileObject, absolutePath, 
                     pluginNodeResolve.nodeResolve(),
                     commonjs({ exclude: "node_modules" }),
                     replace(packageFileObject["name"] === "@project-tool/rollup"
-                        ? { true: true }
+                        ? {}
                         : {
                             __DEV__: 'process.env.NODE_ENV === "development"',
                             __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                            true: true,
+                            preventAssignment: true,
                         }),
                     tsConfig(absolutePath, mode),
                 ] });
@@ -203,11 +203,11 @@ var transformBuildOptions = function (options, packageFileObject, absolutePath, 
                     pluginNodeResolve.nodeResolve(),
                     commonjs({ exclude: "node_modules" }),
                     replace(packageFileObject["name"] === "@project-tool/rollup"
-                        ? { true: true }
+                        ? {}
                         : {
                             __DEV__: 'process.env.NODE_ENV === "development"',
                             __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                            true: true,
+                            preventAssignment: true,
                         }),
                     tsConfig(absolutePath, mode),
                 ] });
@@ -217,11 +217,11 @@ var transformBuildOptions = function (options, packageFileObject, absolutePath, 
                     pluginNodeResolve.nodeResolve(),
                     commonjs({ exclude: "node_modules" }),
                     replace(packageFileObject["name"] === "@project-tool/rollup"
-                        ? { true: true }
+                        ? {}
                         : {
                             __DEV__: 'process.env.NODE_ENV === "development"',
                             __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                            true: true,
+                            preventAssignment: true,
                         }),
                     tsConfig(absolutePath, mode),
                     // mode === "production" ? terser() : null,
@@ -235,11 +235,11 @@ var transformBuildOptions = function (options, packageFileObject, absolutePath, 
                     pluginNodeResolve.nodeResolve(),
                     commonjs({ exclude: "node_modules" }),
                     replace(packageFileObject["name"] === "@project-tool/rollup"
-                        ? { true: true }
+                        ? {}
                         : {
                             __DEV__: 'process.env.NODE_ENV === "development"',
                             __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                            true: true,
+                            preventAssignment: true,
                         }),
                     tsConfig(absolutePath, mode),
                 ] });

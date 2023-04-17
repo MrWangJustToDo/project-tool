@@ -126,12 +126,12 @@ const transformBuildOptions = (
           commonjs({ exclude: "node_modules" }),
           replace(
             packageFileObject["name"] === "@project-tool/rollup"
-              ? { preventAssignment: true }
+              ? {}
               : {
-                  __DEV__: 'process.env.NODE_ENV === "development"',
-                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                  preventAssignment: true,
-                }
+                __DEV__: 'process.env.NODE_ENV === "development"',
+                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                preventAssignment: true,
+              }
           ),
           tsConfig(absolutePath, mode),
         ],
@@ -150,12 +150,12 @@ const transformBuildOptions = (
           commonjs({ exclude: "node_modules" }),
           replace(
             packageFileObject["name"] === "@project-tool/rollup"
-              ? { preventAssignment: true }
+              ? {}
               : {
-                  __DEV__: 'process.env.NODE_ENV === "development"',
-                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                  preventAssignment: true,
-                }
+                __DEV__: 'process.env.NODE_ENV === "development"',
+                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                preventAssignment: true,
+              }
           ),
           tsConfig(absolutePath, mode),
         ],
@@ -172,12 +172,12 @@ const transformBuildOptions = (
           commonjs({ exclude: "node_modules" }),
           replace(
             packageFileObject["name"] === "@project-tool/rollup"
-              ? { preventAssignment: true }
+              ? {}
               : {
-                  __DEV__: 'process.env.NODE_ENV === "development"',
-                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                  preventAssignment: true,
-                }
+                __DEV__: 'process.env.NODE_ENV === "development"',
+                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                preventAssignment: true,
+              }
           ),
           tsConfig(absolutePath, mode),
           // mode === "production" ? terser() : null,
@@ -197,12 +197,12 @@ const transformBuildOptions = (
           commonjs({ exclude: "node_modules" }),
           replace(
             packageFileObject["name"] === "@project-tool/rollup"
-              ? { preventAssignment: true }
+              ? {}
               : {
-                  __DEV__: 'process.env.NODE_ENV === "development"',
-                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                  preventAssignment: true,
-                }
+                __DEV__: 'process.env.NODE_ENV === "development"',
+                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                preventAssignment: true,
+              }
           ),
           tsConfig(absolutePath, mode),
         ],
