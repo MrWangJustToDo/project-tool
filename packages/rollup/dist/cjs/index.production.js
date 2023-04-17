@@ -405,7 +405,7 @@ var watch = function (packageName, rollupOptions, mode, type) {
         }
     });
 };
-function rollupWatch(_packageName) {
+function rollupWatch(_packageName, packageScope) {
     return __awaiter(this, void 0, void 0, function () {
         var packageName, aliasName, _a, singleOther, multipleDevOther, multipleDevUMD;
         return __generator(this, function (_b) {
@@ -413,7 +413,7 @@ function rollupWatch(_packageName) {
                 case 0:
                     packageName = typeof _packageName === "string" ? _packageName : _packageName.name;
                     aliasName = typeof _packageName === "string" ? _packageName : _packageName.alias;
-                    return [4 /*yield*/, getRollupConfigs(packageName)];
+                    return [4 /*yield*/, getRollupConfigs(packageName, packageScope)];
                 case 1:
                     _a = _b.sent(), singleOther = _a.singleOther, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD;
                     singleOther.forEach(function (config) { return watch(aliasName, config, "process.env", "cjs/esm"); });
