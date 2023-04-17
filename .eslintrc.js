@@ -1,3 +1,3 @@
-const base = require("./baseLint");
-
-module.exports = base;
+module.exports = {
+  extends: ['./baseLint']
+};

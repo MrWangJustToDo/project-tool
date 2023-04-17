@@ -4,35 +4,46 @@
   "name": "project-tool",
   "description": "a tool project to help build other project",
   "author": "MrWangJustToDo",
+  "main": "./main.js",
+  "types": "./main.d.ts",
   "engines": {
     "node": ">=10"
   },
   "files": [
     "dist",
-    "lint.js",
-    "build.js",
-    "request.js"
+    "main.js",
+    "main.d.ts",
+    "rollup.js",
+    "rollup.d.ts",
+    "request.js",
+    "request.d.ts",
+    "baseLint.js",
+    "baseLint.d.ts",
+    "reactLint.js",
+    "reactLint.d.ts",
+    "styleLint.js",
+    "styleLint.d.ts"
   ],
   "exports": {
     "./rollup": {
       "default": "./rollup.js",
-      "types": "./dist/types/build.d.ts"
+      "types": "./rollup.d.ts"
     },
     "./baseLint": {
       "default": "./baseLint.js",
-      "types": "./dist/types/eslint/base.d.ts"
+      "types": "./baseLint.d.ts"
     },
     "./reactLint": {
       "default": "./reactLint.js",
-      "types": "./dist/types/eslint/react.d.ts"
+      "types": "./reactLint.d.ts"
     },
     "./styleLint": {
       "default": "./styleLint.js",
-      "types": "./dist/types/stylelint/index.d.ts"
+      "types": "./styleLint.d.ts"
     },
     "./request": {
       "default": "./request.js",
-      "types": "./dist/types/request.d.ts"
+      "types": "./request.d.ts"
     }
   },
   "packageManager": "pnpm@7.5.0",
