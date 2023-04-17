@@ -146,7 +146,7 @@ function fetchAdapter(config) {
                         request = createRequest$1(config);
                     }
                     catch (err) {
-                        if (process.env.NODE_ENV === "development") {
+                        {
                             console.error("fetch adapter create error, ".concat(err.message));
                         }
                         return [2 /*return*/, defaults.adapter(config)];
@@ -294,7 +294,7 @@ function createRequest$1(config) {
 var __SERVER__ = typeof window === "undefined";
 
 var serverLog = function (error) {
-    if (__SERVER__ || process.env.NODE_ENV === "development") {
+    if (__SERVER__ || true) {
         if (error instanceof axios.AxiosError) {
             var config = error.config, status_1 = error.status;
             console.error("[axios]: request error, url: ".concat(config === null || config === void 0 ? void 0 : config.baseURL).concat(config === null || config === void 0 ? void 0 : config.url, ", statusCode: ").concat(status_1, ", error: ").concat(error.message));
