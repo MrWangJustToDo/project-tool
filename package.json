@@ -1,5 +1,5 @@
 {
-  "version": "0.1.5",
+  "version": "0.1.6",
   "license": "MIT",
   "name": "project-tool",
   "description": "a tool project to help build other project",
@@ -19,12 +19,12 @@
   ],
   "exports": {
     "./rollup": {
-      "default": "./rollup.js",
-      "types": "./rollup.d.ts"
+      "types": "./rollup.d.ts",
+      "default": "./rollup.js"
     },
     "./request": {
-      "default": "./request.js",
-      "types": "./request.d.ts"
+      "types": "./request.d.ts",
+      "default": "./request.js"
     },
     "./baseLint": "./baseLint.js",
     "./reactLint": "./reactLint.js",
