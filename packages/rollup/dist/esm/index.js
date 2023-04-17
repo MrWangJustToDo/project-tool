@@ -135,7 +135,7 @@ var tsConfig = function (absolutePath, mode) {
         },
     });
 };
-var transformBuildOptions = function (options, packageFileObject, absolutePath, mode) {
+var transformBuildOptions = function (options, packageFileObject, absolutePath, mode, external) {
     var allOptions = {};
     if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
         options.input = resolve(absolutePath, options.input);
@@ -180,7 +180,7 @@ var transformBuildOptions = function (options, packageFileObject, absolutePath, 
             }
         };
         if (singleOtherConfig.length) {
-            allOptions.singleOther = __assign(__assign({}, options), { output: singleOtherConfig, external: function (id) { return id.includes("node_modules"); }, plugins: [
+            allOptions.singleOther = __assign(__assign({}, options), { output: singleOtherConfig, external: external || (function (id) { return id.includes("node_modules"); }), plugins: [
                     nodeResolve(),
                     commonjs({ exclude: "node_modules" }),
                     replace(packageFileObject["name"] === "@project-tool/rollup"
@@ -211,7 +211,7 @@ var transformBuildOptions = function (options, packageFileObject, absolutePath, 
                 ] });
         }
         if (multipleOtherConfig.length) {
-            allOptions.multipleOther = __assign(__assign({}, options), { output: multipleOtherConfig, external: function (id) { return id.includes("node_modules"); }, plugins: [
+            allOptions.multipleOther = __assign(__assign({}, options), { output: multipleOtherConfig, external: external || (function (id) { return id.includes("node_modules"); }), plugins: [
                     nodeResolve(),
                     commonjs({ exclude: "node_modules" }),
                     replace(packageFileObject["name"] === "@project-tool/rollup"
@@ -245,7 +245,7 @@ var transformBuildOptions = function (options, packageFileObject, absolutePath, 
     }
     return allOptions;
 };
-var flattenRollupConfig = function (rollupConfig, packageName, packageFileObject, absolutePath) {
+var flattenRollupConfig = function (rollupConfig, packageName, packageFileObject, absolutePath, options) {
     var modes = ["development", "production"];
     if (!rollupConfig.input) {
         throw new Error("current package \"".concat(packageName, "\" not have a input config"));
@@ -253,7 +253,7 @@ var flattenRollupConfig = function (rollupConfig, packageName, packageFileObject
     if (!rollupConfig.output) {
         throw new Error("current package \"".concat(packageName, "\" not have a output config"));
     }
-    var allRollupOptions = modes.map(function (mode) { return transformBuildOptions(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode); });
+    var allRollupOptions = modes.map(function (mode) { return transformBuildOptions(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode, options.external); });
     var allDevBuild = allRollupOptions[0];
     var allProdBuild = allRollupOptions[1];
     // single build bundle base on current process env, so only need build once
@@ -275,11 +275,13 @@ var flattenRollupConfig = function (rollupConfig, packageName, packageFileObject
 function filterFun(t) {
     return t ? true : false;
 }
-var getRollupConfigs = function (packageName, packageScope) { return __awaiter(void 0, void 0, void 0, function () {
-    var absolutePath, packageFilePath, tsconfigFilePath, isPackageFileExist, isTsconfigFileExist, packageFileContent, packageFileObject, rollupConfig, typedBuildOptions, all;
+var getRollupConfigs = function (options) { return __awaiter(void 0, void 0, void 0, function () {
+    var packageScope, packageName, absolutePath, packageFilePath, tsconfigFilePath, isPackageFileExist, isTsconfigFileExist, packageFileContent, packageFileObject, rollupConfig, typedBuildOptions, all;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                packageScope = options.packageScope;
+                packageName = options.packageName;
                 absolutePath = packageScope ? resolve(process.cwd(), packageScope, packageName) : resolve(process.cwd(), packageName);
                 packageFilePath = resolve(absolutePath, "package.json");
                 tsconfigFilePath = resolve(absolutePath, "tsconfig.json");
@@ -308,7 +310,7 @@ var getRollupConfigs = function (packageName, packageScope) { return __awaiter(v
                     typedBuildOptions = packageFileObject["buildOptions"];
                     rollupConfig = Array.isArray(typedBuildOptions) ? typedBuildOptions : [typedBuildOptions];
                 }
-                all = rollupConfig.map(function (config) { return flattenRollupConfig(config, packageName, packageFileObject, absolutePath); });
+                all = rollupConfig.map(function (config) { return flattenRollupConfig(config, packageName, packageFileObject, absolutePath, options); });
                 return [2 /*return*/, {
                         singleOther: all.map(function (i) { return i.singleOther; }).filter(filterFun),
                         singleDevUMD: all.map(function (i) { return i.singleDevUMD; }).filter(filterFun),
@@ -354,32 +356,29 @@ var build = function (packageName, rollupOptions, mode, type) { return __awaiter
         }
     });
 }); };
-function rollupBuild(_packageName, packageScope) {
-    return __awaiter(this, void 0, void 0, function () {
-        var packageName, aliasName, _a, singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, multipleProdOther, multipleProdUMD, all;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
-                case 0:
-                    packageName = typeof _packageName === "string" ? _packageName : _packageName.name;
-                    aliasName = typeof _packageName === "string" ? _packageName : _packageName.alias;
-                    return [4 /*yield*/, getRollupConfigs(packageName, packageScope)];
-                case 1:
-                    _a = _b.sent(), singleOther = _a.singleOther, singleDevUMD = _a.singleDevUMD, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD, multipleProdOther = _a.multipleProdOther, multipleProdUMD = _a.multipleProdUMD;
-                    all = [];
-                    singleOther.map(function (config) { return all.push(function () { return build(aliasName, config, "process.env", "cjs/esm"); }); });
-                    singleDevUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "development", "umd"); }); });
-                    multipleDevOther.map(function (config) { return all.push(function () { return build(aliasName, config, "development", "cjs&esm"); }); });
-                    multipleDevUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "development", "umd"); }); });
-                    multipleProdOther.map(function (config) { return all.push(function () { return build(aliasName, config, "production", "cjs&esm"); }); });
-                    multipleProdUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "production", "umd"); }); });
-                    return [4 /*yield*/, Promise.all(all.map(function (f) { return f(); }))];
-                case 2:
-                    _b.sent();
-                    return [2 /*return*/];
-            }
-        });
+var rollupBuild = function (options) { return __awaiter(void 0, void 0, void 0, function () {
+    var aliasName, _a, singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, multipleProdOther, multipleProdUMD, all;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                aliasName = options.alias || options.packageName;
+                return [4 /*yield*/, getRollupConfigs(options)];
+            case 1:
+                _a = _b.sent(), singleOther = _a.singleOther, singleDevUMD = _a.singleDevUMD, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD, multipleProdOther = _a.multipleProdOther, multipleProdUMD = _a.multipleProdUMD;
+                all = [];
+                singleOther.map(function (config) { return all.push(function () { return build(aliasName, config, "process.env", "cjs/esm"); }); });
+                singleDevUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "development", "umd"); }); });
+                multipleDevOther.map(function (config) { return all.push(function () { return build(aliasName, config, "development", "cjs&esm"); }); });
+                multipleDevUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "development", "umd"); }); });
+                multipleProdOther.map(function (config) { return all.push(function () { return build(aliasName, config, "production", "cjs&esm"); }); });
+                multipleProdUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "production", "umd"); }); });
+                return [4 /*yield*/, Promise.all(all.map(function (f) { return f(); }))];
+            case 2:
+                _b.sent();
+                return [2 /*return*/];
+        }
     });
-}
+}); };
 
 var watch = function (packageName, rollupOptions, mode, type) {
     rollupOptions.watch = {
@@ -403,25 +402,22 @@ var watch = function (packageName, rollupOptions, mode, type) {
         }
     });
 };
-function rollupWatch(_packageName, packageScope) {
-    return __awaiter(this, void 0, void 0, function () {
-        var packageName, aliasName, _a, singleOther, multipleDevOther, multipleDevUMD;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
-                case 0:
-                    packageName = typeof _packageName === "string" ? _packageName : _packageName.name;
-                    aliasName = typeof _packageName === "string" ? _packageName : _packageName.alias;
-                    return [4 /*yield*/, getRollupConfigs(packageName, packageScope)];
-                case 1:
-                    _a = _b.sent(), singleOther = _a.singleOther, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD;
-                    singleOther.forEach(function (config) { return watch(aliasName, config, "process.env", "cjs/esm"); });
-                    multipleDevOther.forEach(function (config) { return watch(aliasName, config, "development", "cjs&esm"); });
-                    multipleDevUMD.forEach(function (config) { return watch(aliasName, config, "development", "umd"); });
-                    return [2 /*return*/];
-            }
-        });
+var rollupWatch = function (options) { return __awaiter(void 0, void 0, void 0, function () {
+    var aliasName, _a, singleOther, multipleDevOther, multipleDevUMD;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                aliasName = options.alias || options.packageName;
+                return [4 /*yield*/, getRollupConfigs(options)];
+            case 1:
+                _a = _b.sent(), singleOther = _a.singleOther, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD;
+                singleOther.forEach(function (config) { return watch(aliasName, config, "process.env", "cjs/esm"); });
+                multipleDevOther.forEach(function (config) { return watch(aliasName, config, "development", "cjs&esm"); });
+                multipleDevUMD.forEach(function (config) { return watch(aliasName, config, "development", "umd"); });
+                return [2 /*return*/];
+        }
     });
-}
+}); };
 
 export { rollupBuild, rollupWatch };
 //# sourceMappingURL=index.js.map

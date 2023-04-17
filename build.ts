@@ -1,10 +1,10 @@
 import { rollupBuild } from "./packages/rollup/src";
 
 const start = async () => {
-  await rollupBuild("axios", "packages");
-  await rollupBuild("eslint", "packages");
-  await rollupBuild("rollup", "packages");
-  await rollupBuild("stylelint", "packages");
+  await rollupBuild({ packageName: "axios", packageScope: "packages" });
+  await rollupBuild({ packageName: "eslint", packageScope: "packages" });
+  await rollupBuild({ packageName: "rollup", packageScope: "packages" });
+  await rollupBuild({ packageName: "stylelint", packageScope: "packages" });
 };
 
 start();

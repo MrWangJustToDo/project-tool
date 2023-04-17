@@ -3,7 +3,7 @@ import { watch as rollup } from "rollup";
 import { logger } from "./log";
 import { getRollupConfigs } from "./rollupConfig";
 
-import type { Type, Packages } from "./type";
+import type { Type, Options } from "./type";
 import type { RollupOptions } from "rollup";
 
 const watch = (packageName: string, rollupOptions: RollupOptions, mode: string, type: Type) => {
@@ -32,18 +32,14 @@ const watch = (packageName: string, rollupOptions: RollupOptions, mode: string, 
   });
 };
 
-export async function rollupWatch(_packageName: Packages, packageScope?: string): Promise<void>;
-export async function rollupWatch(_packageName: { name: Packages; alias: string }, packageScope?: string): Promise<void>;
-export async function rollupWatch(_packageName: Packages | { name: Packages; alias: string }, packageScope?: string) {
-  const packageName = typeof _packageName === "string" ? _packageName : _packageName.name;
+export const rollupWatch = async (options: Options) => {
+  const aliasName = options.alias || options.packageName;
 
-  const aliasName = typeof _packageName === "string" ? _packageName : _packageName.alias;
-
-  const { singleOther, multipleDevOther, multipleDevUMD } = await getRollupConfigs(packageName, packageScope);
+  const { singleOther, multipleDevOther, multipleDevUMD } = await getRollupConfigs(options);
 
   singleOther.forEach((config) => watch(aliasName, config, "process.env", "cjs/esm"));
 
   multipleDevOther.forEach((config) => watch(aliasName, config, "development", "cjs&esm"));
 
   multipleDevUMD.forEach((config) => watch(aliasName, config, "development", "umd"));
-}
+};

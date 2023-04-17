@@ -9,7 +9,7 @@ import typescript from "rollup-plugin-typescript2";
 
 import { safeParse } from "./safeParse";
 
-import type { Mode, MultipleOutput } from "./type";
+import type { Mode, MultipleOutput, Options } from "./type";
 import type { RollupOptions } from "rollup";
 
 const defaultBuildOptions: RollupOptions = {
@@ -57,7 +57,8 @@ const transformBuildOptions = (
   options: RollupOptions,
   packageFileObject: Record<string, any>,
   absolutePath: string,
-  mode: Mode
+  mode: Mode,
+  external?: RollupOptions["external"]
 ): {
   singleOther?: RollupOptions;
   singleUMD?: RollupOptions;
@@ -120,7 +121,7 @@ const transformBuildOptions = (
       allOptions.singleOther = {
         ...options,
         output: singleOtherConfig,
-        external: (id) => id.includes("node_modules"),
+        external: external || ((id) => id.includes("node_modules")),
         plugins: [
           nodeResolve(),
           commonjs({ exclude: "node_modules" }),
@@ -128,10 +129,10 @@ const transformBuildOptions = (
             packageFileObject["name"] === "@project-tool/rollup"
               ? {}
               : {
-                __DEV__: 'process.env.NODE_ENV === "development"',
-                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                preventAssignment: true,
-              }
+                  __DEV__: 'process.env.NODE_ENV === "development"',
+                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                  preventAssignment: true,
+                }
           ),
           tsConfig(absolutePath, mode),
         ],
@@ -152,10 +153,10 @@ const transformBuildOptions = (
             packageFileObject["name"] === "@project-tool/rollup"
               ? {}
               : {
-                __DEV__: 'process.env.NODE_ENV === "development"',
-                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                preventAssignment: true,
-              }
+                  __DEV__: 'process.env.NODE_ENV === "development"',
+                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                  preventAssignment: true,
+                }
           ),
           tsConfig(absolutePath, mode),
         ],
@@ -166,7 +167,7 @@ const transformBuildOptions = (
       allOptions.multipleOther = {
         ...options,
         output: multipleOtherConfig,
-        external: (id) => id.includes("node_modules"),
+        external: external || ((id) => id.includes("node_modules")),
         plugins: [
           nodeResolve(),
           commonjs({ exclude: "node_modules" }),
@@ -174,10 +175,10 @@ const transformBuildOptions = (
             packageFileObject["name"] === "@project-tool/rollup"
               ? {}
               : {
-                __DEV__: 'process.env.NODE_ENV === "development"',
-                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                preventAssignment: true,
-              }
+                  __DEV__: 'process.env.NODE_ENV === "development"',
+                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                  preventAssignment: true,
+                }
           ),
           tsConfig(absolutePath, mode),
           // mode === "production" ? terser() : null,
@@ -199,10 +200,10 @@ const transformBuildOptions = (
             packageFileObject["name"] === "@project-tool/rollup"
               ? {}
               : {
-                __DEV__: 'process.env.NODE_ENV === "development"',
-                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                preventAssignment: true,
-              }
+                  __DEV__: 'process.env.NODE_ENV === "development"',
+                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                  preventAssignment: true,
+                }
           ),
           tsConfig(absolutePath, mode),
         ],
@@ -213,7 +214,13 @@ const transformBuildOptions = (
   return allOptions;
 };
 
-const flattenRollupConfig = (rollupConfig: RollupOptions, packageName: string, packageFileObject: Record<string, any>, absolutePath: string) => {
+const flattenRollupConfig = (
+  rollupConfig: RollupOptions,
+  packageName: string,
+  packageFileObject: Record<string, any>,
+  absolutePath: string,
+  options: Options
+) => {
   const modes: Mode[] = ["development", "production"];
 
   if (!rollupConfig.input) {
@@ -224,7 +231,7 @@ const flattenRollupConfig = (rollupConfig: RollupOptions, packageName: string, p
     throw new Error(`current package "${packageName}" not have a output config`);
   }
 
-  const allRollupOptions = modes.map((mode) => transformBuildOptions(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode));
+  const allRollupOptions = modes.map((mode) => transformBuildOptions(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode, options.external));
 
   const allDevBuild = allRollupOptions[0];
 
@@ -257,7 +264,11 @@ function filterFun<T>(t?: T): t is T {
   return t ? true : false;
 }
 
-export const getRollupConfigs = async (packageName: string, packageScope?: string) => {
+export const getRollupConfigs = async (options: Options) => {
+  const packageScope = options.packageScope;
+
+  const packageName = options.packageName;
+
   const absolutePath = packageScope ? resolve(process.cwd(), packageScope, packageName) : resolve(process.cwd(), packageName);
 
   const packageFilePath = resolve(absolutePath, "package.json");
@@ -293,7 +304,7 @@ export const getRollupConfigs = async (packageName: string, packageScope?: strin
     rollupConfig = Array.isArray(typedBuildOptions) ? typedBuildOptions : [typedBuildOptions];
   }
 
-  const all = rollupConfig.map((config) => flattenRollupConfig(config, packageName, packageFileObject, absolutePath));
+  const all = rollupConfig.map((config) => flattenRollupConfig(config, packageName, packageFileObject, absolutePath, options));
 
   return {
     singleOther: all.map((i) => i.singleOther).filter(filterFun),

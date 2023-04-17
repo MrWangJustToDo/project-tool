@@ -1,5 +1,6 @@
+import type { Options } from "./type";
 import type { RollupOptions } from "rollup";
-export declare const getRollupConfigs: (packageName: string, packageScope?: string) => Promise<{
+export declare const getRollupConfigs: (options: Options) => Promise<{
     singleOther: RollupOptions[];
     singleDevUMD: RollupOptions[];
     multipleDevOther: RollupOptions[];

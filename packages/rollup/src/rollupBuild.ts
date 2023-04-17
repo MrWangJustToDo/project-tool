@@ -3,7 +3,7 @@ import { rollup } from "rollup";
 import { logger } from "./log";
 import { getRollupConfigs } from "./rollupConfig";
 
-import type { Packages, Type } from "./type";
+import type { Options, Type } from "./type";
 import type { OutputOptions, RollupOptions, RollupBuild } from "rollup";
 
 const build = async (packageName: string, rollupOptions: RollupOptions, mode: string, type: Type) => {
@@ -22,14 +22,10 @@ const build = async (packageName: string, rollupOptions: RollupOptions, mode: st
   logger().info(`[build] build package '${packageName}' with '${mode}' mode in '${type}' format success`)
 };
 
-export async function rollupBuild(_packageName: { name: Packages; alias: string }, packageScope?: string): Promise<void>;
-export async function rollupBuild(_packageName: Packages, packageScope?: string): Promise<void>;
-export async function rollupBuild(_packageName: Packages | { name: Packages; alias: string }, packageScope?: string) {
-  const packageName = typeof _packageName === "string" ? _packageName : _packageName.name;
+export const rollupBuild = async (options: Options) => {
+  const aliasName = options.alias || options.packageName
 
-  const aliasName = typeof _packageName === "string" ? _packageName : _packageName.alias;
-
-  const { singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, multipleProdOther, multipleProdUMD } = await getRollupConfigs(packageName, packageScope);
+  const { singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, multipleProdOther, multipleProdUMD } = await getRollupConfigs(options);
 
   const all: Array<() => void> = [];
 
