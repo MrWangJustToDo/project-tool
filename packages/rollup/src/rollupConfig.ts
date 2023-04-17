@@ -36,10 +36,10 @@ const checkFileExist = (path: string) => {
     .catch(() => false);
 };
 
-const tsConfig = (relativePath: string, mode: Mode) => {
+const tsConfig = (absolutePath: string, mode: Mode) => {
   return typescript({
     clean: true,
-    tsconfig: resolve(relativePath, "tsconfig.json"),
+    tsconfig: resolve(absolutePath, "tsconfig.json"),
     useTsconfigDeclarationDir: true,
     tsconfigOverride: {
       compilerOptions: {
@@ -56,7 +56,7 @@ const tsConfig = (relativePath: string, mode: Mode) => {
 const transformBuildOptions = (
   options: RollupOptions,
   packageFileObject: Record<string, any>,
-  relativePath: string,
+  absolutePath: string,
   mode: Mode
 ): {
   singleOther?: RollupOptions;
@@ -70,8 +70,8 @@ const transformBuildOptions = (
     multipleOther?: RollupOptions;
     multipleUMD?: RollupOptions;
   } = {};
-  if (typeof options.input === "string" && !options.input.startsWith(relativePath)) {
-    options.input = resolve(relativePath, options.input);
+  if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
+    options.input = resolve(absolutePath, options.input);
   }
   if (options.output) {
     options.output = Array.isArray(options.output) ? options.output : [options.output];
@@ -85,8 +85,8 @@ const transformBuildOptions = (
     const umdGlobalIgnore: string[] = [];
 
     options.output = options.output.map((output: MultipleOutput) => {
-      if (output.dir && !output.dir.startsWith(relativePath)) {
-        output.dir = resolve(relativePath, output.dir);
+      if (output.dir && !output.dir.startsWith(absolutePath)) {
+        output.dir = resolve(absolutePath, output.dir);
         if (output.multiple) {
           const typedEntryFileNames = output.entryFileNames as string;
           const lastIndexofDote = typedEntryFileNames.lastIndexOf(".");
@@ -94,8 +94,8 @@ const transformBuildOptions = (
           delete output.multiple;
         }
       }
-      if (output.file && !output.file.startsWith(relativePath)) {
-        output.file = resolve(relativePath, output.file);
+      if (output.file && !output.file.startsWith(absolutePath)) {
+        output.file = resolve(absolutePath, output.file);
         if (output.multiple) {
           const typedEntryFileNames = output.file as string;
           const lastIndexofDote = typedEntryFileNames.lastIndexOf(".");
@@ -133,7 +133,7 @@ const transformBuildOptions = (
                   preventAssignment: true,
                 }
           ),
-          tsConfig(relativePath, mode),
+          tsConfig(absolutePath, mode),
         ],
       };
     }
@@ -157,7 +157,7 @@ const transformBuildOptions = (
                   preventAssignment: true,
                 }
           ),
-          tsConfig(relativePath, mode),
+          tsConfig(absolutePath, mode),
         ],
       };
     }
@@ -179,7 +179,7 @@ const transformBuildOptions = (
                   preventAssignment: true,
                 }
           ),
-          tsConfig(relativePath, mode),
+          tsConfig(absolutePath, mode),
           // mode === "production" ? terser() : null,
         ],
       };
@@ -204,7 +204,7 @@ const transformBuildOptions = (
                   preventAssignment: true,
                 }
           ),
-          tsConfig(relativePath, mode),
+          tsConfig(absolutePath, mode),
         ],
       };
     }
@@ -213,7 +213,7 @@ const transformBuildOptions = (
   return allOptions;
 };
 
-const flattenRollupConfig = (rollupConfig: RollupOptions, packageName: string, packageFileObject: Record<string, any>, relativePath: string) => {
+const flattenRollupConfig = (rollupConfig: RollupOptions, packageName: string, packageFileObject: Record<string, any>, absolutePath: string) => {
   const modes: Mode[] = ["development", "production"];
 
   if (!rollupConfig.input) {
@@ -224,7 +224,7 @@ const flattenRollupConfig = (rollupConfig: RollupOptions, packageName: string, p
     throw new Error(`current package "${packageName}" not have a output config`);
   }
 
-  const allRollupOptions = modes.map((mode) => transformBuildOptions(cloneDeep(rollupConfig), packageFileObject, relativePath, mode));
+  const allRollupOptions = modes.map((mode) => transformBuildOptions(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode));
 
   const allDevBuild = allRollupOptions[0];
 
@@ -258,22 +258,22 @@ function filterFun<T>(t?: T): t is T {
 }
 
 export const getRollupConfigs = async (packageName: string, packageScope?: string) => {
-  const relativePath = packageScope ? resolve(process.cwd(), packageScope, packageName) : resolve(process.cwd(), packageName);
+  const absolutePath = packageScope ? resolve(process.cwd(), packageScope, packageName) : resolve(process.cwd(), packageName);
 
-  const packageFilePath = resolve(relativePath, "package.json");
+  const packageFilePath = resolve(absolutePath, "package.json");
 
-  const tsconfigFilePath = resolve(relativePath, "tsconfig.json");
+  const tsconfigFilePath = resolve(absolutePath, "tsconfig.json");
 
   const isPackageFileExist = await checkFileExist(packageFilePath);
 
   const isTsconfigFileExist = await checkFileExist(tsconfigFilePath);
 
   if (!isPackageFileExist) {
-    throw new Error(`current package ${packageName} not exist!`);
+    throw new Error(`current package "${packageName}" not exist, absolutePath: ${packageFilePath}`);
   }
 
   if (!isTsconfigFileExist) {
-    throw new Error(`current package ${packageName} not have a "tsconfig.json"`);
+    throw new Error(`current package "${packageName}" not have a "tsconfig.json", absolutePath: ${tsconfigFilePath}`);
   }
 
   const packageFileContent = await readFile(packageFilePath, {
@@ -293,7 +293,7 @@ export const getRollupConfigs = async (packageName: string, packageScope?: strin
     rollupConfig = Array.isArray(typedBuildOptions) ? typedBuildOptions : [typedBuildOptions];
   }
 
-  const all = rollupConfig.map((config) => flattenRollupConfig(config, packageName, packageFileObject, relativePath));
+  const all = rollupConfig.map((config) => flattenRollupConfig(config, packageName, packageFileObject, absolutePath));
 
   return {
     singleOther: all.map((i) => i.singleOther).filter(filterFun),

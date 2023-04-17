@@ -1,4 +1,6 @@
 import { rollup, watch as watch$1 } from 'rollup';
+import { pino } from 'pino';
+import pretty from 'pino-pretty';
 import commonjs from '@rollup/plugin-commonjs';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
@@ -84,6 +86,8 @@ function __generator(thisArg, body) {
     }
 }
 
+var logger = function () { return pino(pretty()); };
+
 var safeParse = function (str) {
     try {
         return JSON.parse(str);
@@ -115,10 +119,10 @@ var checkFileExist = function (path) {
         .then(function () { return true; })
         .catch(function () { return false; });
 };
-var tsConfig = function (relativePath, mode) {
+var tsConfig = function (absolutePath, mode) {
     return typescript({
         clean: true,
-        tsconfig: resolve(relativePath, "tsconfig.json"),
+        tsconfig: resolve(absolutePath, "tsconfig.json"),
         useTsconfigDeclarationDir: true,
         tsconfigOverride: {
             compilerOptions: {
@@ -131,10 +135,10 @@ var tsConfig = function (relativePath, mode) {
         },
     });
 };
-var transformBuildOptions = function (options, packageFileObject, relativePath, mode) {
+var transformBuildOptions = function (options, packageFileObject, absolutePath, mode) {
     var allOptions = {};
-    if (typeof options.input === "string" && !options.input.startsWith(relativePath)) {
-        options.input = resolve(relativePath, options.input);
+    if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
+        options.input = resolve(absolutePath, options.input);
     }
     if (options.output) {
         options.output = Array.isArray(options.output) ? options.output : [options.output];
@@ -146,8 +150,8 @@ var transformBuildOptions = function (options, packageFileObject, relativePath, 
         var multipleUMDConfig = multipleConfig.filter(function (output) { return output.format === "umd"; });
         var umdGlobalIgnore_1 = [];
         options.output = options.output.map(function (output) {
-            if (output.dir && !output.dir.startsWith(relativePath)) {
-                output.dir = resolve(relativePath, output.dir);
+            if (output.dir && !output.dir.startsWith(absolutePath)) {
+                output.dir = resolve(absolutePath, output.dir);
                 if (output.multiple) {
                     var typedEntryFileNames = output.entryFileNames;
                     var lastIndexofDote = typedEntryFileNames.lastIndexOf(".");
@@ -155,8 +159,8 @@ var transformBuildOptions = function (options, packageFileObject, relativePath, 
                     delete output.multiple;
                 }
             }
-            if (output.file && !output.file.startsWith(relativePath)) {
-                output.file = resolve(relativePath, output.file);
+            if (output.file && !output.file.startsWith(absolutePath)) {
+                output.file = resolve(absolutePath, output.file);
                 if (output.multiple) {
                     var typedEntryFileNames = output.file;
                     var lastIndexofDote = typedEntryFileNames.lastIndexOf(".");
@@ -186,7 +190,7 @@ var transformBuildOptions = function (options, packageFileObject, relativePath, 
                             __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
                             true: true,
                         }),
-                    tsConfig(relativePath, mode),
+                    tsConfig(absolutePath, mode),
                 ] });
         }
         if (singleUMDConfig.length) {
@@ -203,7 +207,7 @@ var transformBuildOptions = function (options, packageFileObject, relativePath, 
                             __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
                             true: true,
                         }),
-                    tsConfig(relativePath, mode),
+                    tsConfig(absolutePath, mode),
                 ] });
         }
         if (multipleOtherConfig.length) {
@@ -217,7 +221,7 @@ var transformBuildOptions = function (options, packageFileObject, relativePath, 
                             __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
                             true: true,
                         }),
-                    tsConfig(relativePath, mode),
+                    tsConfig(absolutePath, mode),
                     // mode === "production" ? terser() : null,
                 ] });
         }
@@ -235,13 +239,13 @@ var transformBuildOptions = function (options, packageFileObject, relativePath, 
                             __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
                             true: true,
                         }),
-                    tsConfig(relativePath, mode),
+                    tsConfig(absolutePath, mode),
                 ] });
         }
     }
     return allOptions;
 };
-var flattenRollupConfig = function (rollupConfig, packageName, packageFileObject, relativePath) {
+var flattenRollupConfig = function (rollupConfig, packageName, packageFileObject, absolutePath) {
     var modes = ["development", "production"];
     if (!rollupConfig.input) {
         throw new Error("current package \"".concat(packageName, "\" not have a input config"));
@@ -249,7 +253,7 @@ var flattenRollupConfig = function (rollupConfig, packageName, packageFileObject
     if (!rollupConfig.output) {
         throw new Error("current package \"".concat(packageName, "\" not have a output config"));
     }
-    var allRollupOptions = modes.map(function (mode) { return transformBuildOptions(cloneDeep(rollupConfig), packageFileObject, relativePath, mode); });
+    var allRollupOptions = modes.map(function (mode) { return transformBuildOptions(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode); });
     var allDevBuild = allRollupOptions[0];
     var allProdBuild = allRollupOptions[1];
     // single build bundle base on current process env, so only need build once
@@ -272,13 +276,13 @@ function filterFun(t) {
     return t ? true : false;
 }
 var getRollupConfigs = function (packageName, packageScope) { return __awaiter(void 0, void 0, void 0, function () {
-    var relativePath, packageFilePath, tsconfigFilePath, isPackageFileExist, isTsconfigFileExist, packageFileContent, packageFileObject, rollupConfig, typedBuildOptions, all;
+    var absolutePath, packageFilePath, tsconfigFilePath, isPackageFileExist, isTsconfigFileExist, packageFileContent, packageFileObject, rollupConfig, typedBuildOptions, all;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                relativePath = packageScope ? resolve(process.cwd(), packageScope, packageName) : resolve(process.cwd(), packageName);
-                packageFilePath = resolve(relativePath, "package.json");
-                tsconfigFilePath = resolve(relativePath, "tsconfig.json");
+                absolutePath = packageScope ? resolve(process.cwd(), packageScope, packageName) : resolve(process.cwd(), packageName);
+                packageFilePath = resolve(absolutePath, "package.json");
+                tsconfigFilePath = resolve(absolutePath, "tsconfig.json");
                 return [4 /*yield*/, checkFileExist(packageFilePath)];
             case 1:
                 isPackageFileExist = _a.sent();
@@ -286,10 +290,10 @@ var getRollupConfigs = function (packageName, packageScope) { return __awaiter(v
             case 2:
                 isTsconfigFileExist = _a.sent();
                 if (!isPackageFileExist) {
-                    throw new Error("current package ".concat(packageName, " not exist!"));
+                    throw new Error("current package \"".concat(packageName, "\" not exist, absolutePath: ").concat(packageFilePath));
                 }
                 if (!isTsconfigFileExist) {
-                    throw new Error("current package ".concat(packageName, " not have a \"tsconfig.json\""));
+                    throw new Error("current package \"".concat(packageName, "\" not have a \"tsconfig.json\", absolutePath: ").concat(tsconfigFilePath));
                 }
                 return [4 /*yield*/, readFile(packageFilePath, {
                         encoding: "utf-8",
@@ -304,7 +308,7 @@ var getRollupConfigs = function (packageName, packageScope) { return __awaiter(v
                     typedBuildOptions = packageFileObject["buildOptions"];
                     rollupConfig = Array.isArray(typedBuildOptions) ? typedBuildOptions : [typedBuildOptions];
                 }
-                all = rollupConfig.map(function (config) { return flattenRollupConfig(config, packageName, packageFileObject, relativePath); });
+                all = rollupConfig.map(function (config) { return flattenRollupConfig(config, packageName, packageFileObject, absolutePath); });
                 return [2 /*return*/, {
                         singleOther: all.map(function (i) { return i.singleOther; }).filter(filterFun),
                         singleDevUMD: all.map(function (i) { return i.singleDevUMD; }).filter(filterFun),
@@ -322,7 +326,7 @@ var build = function (packageName, rollupOptions, mode, type) { return __awaiter
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                console.log("[build] start build package '".concat(packageName, "' with ").concat(mode, " mode in ").concat(type, " format"));
+                logger().info("[build] start build package '".concat(packageName, "' with '").concat(mode, "' mode in '").concat(type, "' format"));
                 bundle = null;
                 _a.label = 1;
             case 1:
@@ -337,14 +341,15 @@ var build = function (packageName, rollupOptions, mode, type) { return __awaiter
                 return [3 /*break*/, 7];
             case 4:
                 e_1 = _a.sent();
-                console.error("[build] build package '".concat(packageName, "' with ").concat(mode, " mode in ").concat(type, " format failed \n ").concat(e_1.message));
-                throw e_1;
+                logger().error("[build] build package '".concat(packageName, "' with '").concat(mode, "' mode in '").concat(type, "' format failed \n ").concat(e_1.message));
+                process.exit(1);
+                return [3 /*break*/, 7];
             case 5: return [4 /*yield*/, (bundle === null || bundle === void 0 ? void 0 : bundle.close())];
             case 6:
                 _a.sent();
                 return [7 /*endfinally*/];
             case 7:
-                console.log("[build] build package '".concat(packageName, "' with ").concat(mode, " mode in ").concat(type, " format success"));
+                logger().info("[build] build package '".concat(packageName, "' with '").concat(mode, "' mode in '").concat(type, "' format success"));
                 return [2 /*return*/];
         }
     });
@@ -384,17 +389,17 @@ var watch = function (packageName, rollupOptions, mode, type) {
     watcher.on("event", function (event) {
         if (event.code === "BUNDLE_START") {
             // look like rollup watch have a bug for some usage
-            console.log("[watch] start build package ".concat(packageName, " with ").concat(mode, " mode in ").concat(type, " format"));
+            logger().info("[watch] start build package '".concat(packageName, "' with '").concat(mode, "' mode in '").concat(type, "' format"));
         }
         if (event.code === "BUNDLE_END") {
             if (event.result)
                 event.result.close();
-            console.log("[watch] package ".concat(packageName, " with ").concat(mode, " mode in ").concat(type, " format build success"));
+            logger().info("[watch] package '".concat(packageName, "' with '").concat(mode, "' mode in '").concat(type, "' format build success"));
         }
         if (event.code === "ERROR") {
             if (event.result)
                 event.result.close();
-            console.log("[watch] package ".concat(packageName, " with ").concat(mode, " mode in ").concat(type, " format build failed \n ").concat(event.error.stack));
+            logger().error("[watch] package '".concat(packageName, "' with '").concat(mode, "' mode in '").concat(type, "' format build failed \n ").concat(event.error.stack));
         }
     });
 };

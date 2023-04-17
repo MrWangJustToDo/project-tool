@@ -1,5 +1,6 @@
 import { watch as rollup } from "rollup";
 
+import { logger } from "./log";
 import { getRollupConfigs } from "./rollupConfig";
 
 import type { Type, Packages } from "./type";
@@ -16,17 +17,17 @@ const watch = (packageName: string, rollupOptions: RollupOptions, mode: string, 
     if (event.code === "BUNDLE_START") {
       // look like rollup watch have a bug for some usage
 
-      console.log(`[watch] start build package ${packageName} with ${mode} mode in ${type} format`);
+      logger().info(`[watch] start build package '${packageName}' with '${mode}' mode in '${type}' format`);
     }
     if (event.code === "BUNDLE_END") {
       if (event.result) event.result.close();
 
-      console.log(`[watch] package ${packageName} with ${mode} mode in ${type} format build success`);
+      logger().info(`[watch] package '${packageName}' with '${mode}' mode in '${type}' format build success`);
     }
     if (event.code === "ERROR") {
       if (event.result) event.result.close();
 
-      console.log(`[watch] package ${packageName} with ${mode} mode in ${type} format build failed \n ${event.error.stack}`);
+      logger().error(`[watch] package '${packageName}' with '${mode}' mode in '${type}' format build failed \n ${event.error.stack}`);
     }
   });
 };

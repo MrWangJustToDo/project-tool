@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "name": "project-tool",
   "description": "a tool project to help build other project",
@@ -58,6 +58,8 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "lodash": "^4.17.21",
+    "pino": "^8.11.0",
+    "pino-pretty": "^10.0.0",
     "postcss": "^8.4.22",
     "prettier": "^2.8.4",
     "rollup": "^3.20.2",
@@ -67,7 +69,8 @@
     "stylelint-config-standard-scss": "^8.0.0",
     "stylelint-order": "^6.0.3",
     "stylelint-prettier": "^3.0.0",
-    "stylelint-scss": "^4.6.0"
+    "stylelint-scss": "^4.6.0",
+    "tslib": "^2.5.0"
   },
   "devDependencies": {
     "@project-tool/axios": "workspace: *",
@@ -79,7 +82,6 @@
     "@types/lodash": "^4.14.194",
     "@types/node": "^18.15.11",
     "ts-node": "^10.9.1",
-    "tslib": "^2.5.0",
     "typescript": "^4.7.4"
   }
 }

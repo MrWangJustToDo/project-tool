@@ -1,24 +1,25 @@
 import { rollup } from "rollup";
 
+import { logger } from "./log";
 import { getRollupConfigs } from "./rollupConfig";
 
 import type { Packages, Type } from "./type";
 import type { OutputOptions, RollupOptions, RollupBuild } from "rollup";
 
 const build = async (packageName: string, rollupOptions: RollupOptions, mode: string, type: Type) => {
-  console.log(`[build] start build package '${packageName}' with ${mode} mode in ${type} format`);
+  logger().info(`[build] start build package '${packageName}' with '${mode}' mode in '${type}' format`)
   let bundle: RollupBuild | null = null;
   try {
     const { output, ...options } = rollupOptions;
     bundle = await rollup(options);
     await Promise.all((output as OutputOptions[]).map((output) => bundle?.write(output)));
   } catch (e) {
-    console.error(`[build] build package '${packageName}' with ${mode} mode in ${type} format failed \n ${(e as Error).message}`);
-    throw e;
+    logger().error(`[build] build package '${packageName}' with '${mode}' mode in '${type}' format failed \n ${(e as Error).message}`)
+    process.exit(1)
   } finally {
     await bundle?.close();
   }
-  console.log(`[build] build package '${packageName}' with ${mode} mode in ${type} format success`);
+  logger().info(`[build] build package '${packageName}' with '${mode}' mode in '${type}' format success`)
 };
 
 export async function rollupBuild(_packageName: { name: Packages; alias: string }, packageScope?: string): Promise<void>;
