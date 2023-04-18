@@ -1,4 +1,5 @@
 import { merge } from 'webpack-merge';
+export * from 'webpack-merge';
 import path from 'path';
 import ESLintWebpackPlugin from 'eslint-webpack-plugin';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
@@ -6,6 +7,36 @@ import { sources, Compilation, DefinePlugin, HotModuleReplacementPlugin } from '
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { WebpackManifestPlugin } from 'webpack-manifest-plugin';
 import nodeExternals from 'webpack-node-externals';
+
+var outputPath = function (env, isDEV, outputScope) { return path.resolve(process.cwd(), isDEV ? "dev" : "dist", outputScope, env); };
+var outputConfig = function (_a) {
+    var env = _a.env, isDEV = _a.isDEV, isMIDDLEWARE = _a.isMIDDLEWARE, DEV_HOST = _a.DEV_HOST, WDS_PORT = _a.WDS_PORT, PROD_HOST = _a.PROD_HOST, PROD_PORT = _a.PROD_PORT, OUTPUT_SCOPE = _a.OUTPUT_SCOPE;
+    return env === "client"
+        ? {
+            clean: true,
+            // 输出路径
+            path: outputPath(env, Boolean(isDEV), OUTPUT_SCOPE),
+            // 输出文件名
+            filename: isDEV ? "[name].js" : "[name]-[contenthash].js",
+            // 按需加载的chunk名
+            chunkFilename: isDEV ? "[name].js" : "[name]-[contenthash].js",
+            // 引入资源的url路径
+            publicPath: isDEV ? (isMIDDLEWARE ? "/dev/" : "http://".concat(DEV_HOST, ":").concat(WDS_PORT, "/dev/")) : "http://".concat(PROD_HOST, ":").concat(PROD_PORT, "/").concat(OUTPUT_SCOPE, "client/"),
+        }
+        : {
+            clean: true,
+            path: outputPath(env, Boolean(isDEV), OUTPUT_SCOPE),
+            // 输出文件名
+            filename: "app.js",
+            // 按需加载的chunk名
+            chunkFilename: isDEV ? "[name].js" : "[name]-[contenthash].js",
+            // 引入资源的url路径
+            publicPath: isDEV ? (isMIDDLEWARE ? "/dev/" : "http://".concat(DEV_HOST, ":").concat(WDS_PORT, "/dev/")) : "http://".concat(PROD_HOST, ":").concat(PROD_PORT, "/").concat(OUTPUT_SCOPE, "client/"),
+            library: {
+                type: "commonjs2",
+            },
+        };
+};
 
 /******************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -45,67 +76,12 @@ function __spreadArray(to, from, pack) {
 
 var MANIFEST;
 (function (MANIFEST) {
+    MANIFEST["manifest_loadable"] = "manifest-loadable.json";
     MANIFEST["manifest_deps"] = "manifest-deps.json";
     MANIFEST["manifest_dev"] = "manifest-dev.json";
     MANIFEST["manifest_prod"] = "manifest-prod.json";
     MANIFEST["manifest_static"] = "manifest-static.json";
 })(MANIFEST || (MANIFEST = {}));
-
-var devServerConfig = function (_a) {
-    var publicPath = _a.publicPath, DEV_HOST = _a.DEV_HOST, WDS_PORT = _a.WDS_PORT;
-    return ({
-        hot: true,
-        client: {
-            logging: "verbose",
-            progress: true,
-            reconnect: true,
-        },
-        compress: true,
-        liveReload: true,
-        headers: {
-            "Access-Control-Allow-Origin": "*",
-        },
-        host: DEV_HOST,
-        port: WDS_PORT,
-        static: {
-            publicPath: publicPath,
-        },
-        devMiddleware: {
-            publicPath: publicPath,
-            writeToDisk: function (fileName) { return fileName.includes(MANIFEST.manifest_deps) || fileName.includes(MANIFEST.manifest_dev); },
-        },
-    });
-};
-
-var outputPath = function (env, isDEV, outputScope) { return path.resolve(process.cwd(), isDEV ? "dev" : "dist", outputScope, env); };
-var outputConfig = function (_a) {
-    var env = _a.env, isDEV = _a.isDEV, isMIDDLEWARE = _a.isMIDDLEWARE, DEV_HOST = _a.DEV_HOST, WDS_PORT = _a.WDS_PORT, PROD_HOST = _a.PROD_HOST, PROD_PORT = _a.PROD_PORT, OUTPUT_SCOPE = _a.OUTPUT_SCOPE;
-    return env === "client"
-        ? {
-            clean: true,
-            // 输出路径
-            path: outputPath(env, Boolean(isDEV), OUTPUT_SCOPE),
-            // 输出文件名
-            filename: isDEV ? "[name].js" : "[name]-[contenthash].js",
-            // 按需加载的chunk名
-            chunkFilename: isDEV ? "[name].js" : "[name]-[contenthash].js",
-            // 引入资源的url路径
-            publicPath: isDEV ? (isMIDDLEWARE ? "/dev/" : "http://".concat(DEV_HOST, ":").concat(WDS_PORT, "/dev/")) : "http://".concat(PROD_HOST, ":").concat(PROD_PORT, "/").concat(OUTPUT_SCOPE, "client/"),
-        }
-        : {
-            clean: true,
-            path: outputPath(env, Boolean(isDEV), OUTPUT_SCOPE),
-            // 输出文件名
-            filename: "app.js",
-            // 按需加载的chunk名
-            chunkFilename: isDEV ? "[name].js" : "[name]-[contenthash].js",
-            // 引入资源的url路径
-            publicPath: isDEV ? (isMIDDLEWARE ? "/dev/" : "http://".concat(DEV_HOST, ":").concat(WDS_PORT, "/dev/")) : "http://".concat(PROD_HOST, ":").concat(PROD_PORT, "/").concat(OUTPUT_SCOPE, "client/"),
-            library: {
-                type: "commonjs2",
-            },
-        };
-};
 
 // https://github.com/artem-malko/react-ssr-template/blob/main/src/infrastructure/dependencyManager/webpack/plugin.ts
 var RawSource = sources.RawSource;
@@ -298,14 +274,12 @@ var ClientConfig = function (props) {
     var clientBase = BaseConfig(props);
     var output = outputConfig(props);
     var plugins = pluginsConfig(props);
-    var devServer = devServerConfig(__assign({ publicPath: output === null || output === void 0 ? void 0 : output.publicPath }, props));
     return merge(clientBase, {
         devtool: isDEV ? "eval-cheap-module-source-map" : "hidden-source-map",
         entry: {
             main: isDEV && isMIDDLEWARE ? ["webpack-hot-middleware/client", entry] : entry,
         },
         output: output,
-        devServer: devServer,
         plugins: plugins,
     });
 };

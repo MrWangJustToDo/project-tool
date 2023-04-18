@@ -1,6 +1,5 @@
 import { merge } from "webpack-merge";
 
-import { devServerConfig } from "./config/devServer";
 import { outputConfig } from "./config/output";
 import { pluginsConfig } from "./config/plugins";
 import { BaseConfig } from "./webpack.base.config";
@@ -14,17 +13,12 @@ export const ClientConfig = (props: SafeGenerateActionProps): Partial<Configurat
   const clientBase = BaseConfig(props);
   const output = outputConfig(props);
   const plugins = pluginsConfig(props);
-  const devServer = devServerConfig({
-    publicPath: output?.publicPath as string,
-    ...props,
-  });
   return merge<Partial<Configuration>>(clientBase, {
     devtool: isDEV ? "eval-cheap-module-source-map" : "hidden-source-map",
     entry: {
       main: isDEV && isMIDDLEWARE ? ["webpack-hot-middleware/client", entry] : entry,
     },
     output,
-    devServer,
     plugins,
   });
 };

@@ -1,3 +1,1 @@
-import { definedUniversalWebpackConfig, definedWebpackConfig, MANIFEST } from "./packages/webpack";
-
-export { definedUniversalWebpackConfig, definedWebpackConfig, MANIFEST };
+export * from "./packages/webpack";
