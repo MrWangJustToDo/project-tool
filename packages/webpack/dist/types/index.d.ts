@@ -4,5 +4,5 @@ export declare const definedUniversalWebpackConfig: ({ serverEntry, clientEntry,
 export declare const definedWebpackConfig: (props: Required<import("./type").BaseGenerateActionProps> & Required<import("./type").ENV> & import("./type").CHECK & {
     extendConfig?: (props: import("./type").SafeGenerateActionProps) => Partial<import("webpack").Configuration>;
 }) => Partial<import("webpack").Configuration>;
-export { MANIFEST } from "./utils/config";
+export { MANIFEST } from "./utils";
 //# sourceMappingURL=index.d.ts.map
