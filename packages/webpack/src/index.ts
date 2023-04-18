@@ -8,4 +8,4 @@ export const definedUniversalWebpackConfig = config;
 
 export const definedWebpackConfig = singleConfig;
 
-export { MANIFEST } from "./utils/config";
+export { MANIFEST } from "./utils";
