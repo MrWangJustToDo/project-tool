@@ -369,12 +369,12 @@ var rollupBuild = function (options) { return __awaiter(void 0, void 0, void 0, 
             case 1:
                 _a = _b.sent(), singleOther = _a.singleOther, singleDevUMD = _a.singleDevUMD, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD, multipleProdOther = _a.multipleProdOther, multipleProdUMD = _a.multipleProdUMD;
                 all = [];
-                singleOther.map(function (config) { return all.push(function () { return build(aliasName, config, "process.env", "cjs/esm"); }); });
-                singleDevUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "development", "umd"); }); });
-                multipleDevOther.map(function (config) { return all.push(function () { return build(aliasName, config, "development", "cjs&esm"); }); });
-                multipleDevUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "development", "umd"); }); });
-                multipleProdOther.map(function (config) { return all.push(function () { return build(aliasName, config, "production", "cjs&esm"); }); });
-                multipleProdUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "production", "umd"); }); });
+                singleOther.map(function (config) { return all.push(function () { return build(aliasName, config, "process.env", config.output.map(function (v) { return v.format; }).join("&")); }); });
+                singleDevUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); }); });
+                multipleDevOther.map(function (config) { return all.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); }); });
+                multipleDevUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); }); });
+                multipleProdOther.map(function (config) { return all.push(function () { return build(aliasName, config, "production", config.output.map(function (v) { return v.format; }).join("&")); }); });
+                multipleProdUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "production", config.output.map(function (v) { return v.format; }).join("&")); }); });
                 return [4 /*yield*/, Promise.all(all.map(function (f) { return f(); }))];
             case 2:
                 _b.sent();
@@ -414,9 +414,9 @@ var rollupWatch = function (options) { return __awaiter(void 0, void 0, void 0, 
                 return [4 /*yield*/, getRollupConfigs(options)];
             case 1:
                 _a = _b.sent(), singleOther = _a.singleOther, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD;
-                singleOther.forEach(function (config) { return watch(aliasName, config, "process.env", "cjs/esm"); });
-                multipleDevOther.forEach(function (config) { return watch(aliasName, config, "development", "cjs&esm"); });
-                multipleDevUMD.forEach(function (config) { return watch(aliasName, config, "development", "umd"); });
+                singleOther.forEach(function (config) { return watch(aliasName, config, "process.env", config.output.map(function (v) { return v.format; }).join("&")); });
+                multipleDevOther.forEach(function (config) { return watch(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); });
+                multipleDevUMD.forEach(function (config) { return watch(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); });
                 return [2 /*return*/];
         }
     });

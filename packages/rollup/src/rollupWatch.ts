@@ -4,7 +4,7 @@ import { logger } from "./log";
 import { getRollupConfigs } from "./rollupConfig";
 
 import type { Type, Options } from "./type";
-import type { RollupOptions } from "rollup";
+import type { RollupOptions , OutputOptions} from "rollup";
 
 const watch = (packageName: string, rollupOptions: RollupOptions, mode: string, type: Type) => {
   rollupOptions.watch = {
@@ -37,9 +37,9 @@ export const rollupWatch = async (options: Options) => {
 
   const { singleOther, multipleDevOther, multipleDevUMD } = await getRollupConfigs(options);
 
-  singleOther.forEach((config) => watch(aliasName, config, "process.env", "cjs/esm"));
+  singleOther.forEach((config) => watch(aliasName, config, "process.env", (config.output as OutputOptions[]).map((v) => v.format).join("&")));
 
-  multipleDevOther.forEach((config) => watch(aliasName, config, "development", "cjs&esm"));
+  multipleDevOther.forEach((config) => watch(aliasName, config, "development", (config.output as OutputOptions[]).map((v) => v.format).join("&")));
 
-  multipleDevUMD.forEach((config) => watch(aliasName, config, "development", "umd"));
+  multipleDevUMD.forEach((config) => watch(aliasName, config, "development", (config.output as OutputOptions[]).map((v) => v.format).join("&")));
 };
