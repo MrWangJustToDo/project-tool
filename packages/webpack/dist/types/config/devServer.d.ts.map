@@ -1,1 +1,0 @@
-{"version":3,"file":"devServer.d.ts","sourceRoot":"","sources":["../../../src/config/devServer.ts"],"names":[],"mappings":"AAEA,OAAO,KAAK,EAAE,uBAAuB,EAAE,MAAM,SAAS,CAAC;AACvD,OAAO,KAAK,EAAE,aAAa,EAAE,MAAM,oBAAoB,CAAC;AAExD,KAAK,cAAc,GAAG,uBAAuB,GAAG;IAAE,UAAU,EAAE,MAAM,CAAA;CAAE,CAAC;AAEvE,eAAO,MAAM,eAAe,uCAAwC,cAAc,KAAG,aAqBnF,CAAC"}
