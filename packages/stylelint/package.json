@@ -35,12 +35,12 @@
   },
   "dependencies": {
     "postcss": "^8.4.22",
-    "prettier": "^2.8.4",
-    "stylelint": "^15.5.0",
+    "prettier": "^2.8.8",
+    "stylelint": "^15.6.1",
     "stylelint-config-standard": "^33.0.0",
-    "stylelint-config-standard-scss": "^8.0.0",
+    "stylelint-config-standard-scss": "^9.0.0",
     "stylelint-order": "^6.0.3",
     "stylelint-prettier": "^3.0.0",
-    "stylelint-scss": "^4.6.0"
+    "stylelint-scss": "^5.0.0"
   }
 }

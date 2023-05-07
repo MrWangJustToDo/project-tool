@@ -41,7 +41,7 @@
     "lodash": "^4.17.21",
     "pino": "^8.11.0",
     "pino-pretty": "^10.0.0",
-    "rollup": "^3.20.2",
+    "rollup": "^3.21.5",
     "rollup-plugin-typescript2": "^0.34.1",
     "tslib": "^2.5.0"
   },

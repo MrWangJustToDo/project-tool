@@ -128,6 +128,7 @@ var generateFetchWithTimeout = function (timeout) {
 };
 
 /* eslint-disable @typescript-eslint/no-var-requires */
+// SEE https://github.com/vespaiach/axios-fetch-adapter/blob/main/index.js
 var buildFullPath = require("axios/lib/core/buildFullPath");
 var settle = require("axios/lib/core/settle");
 var defaults = require("axios/lib/defaults");

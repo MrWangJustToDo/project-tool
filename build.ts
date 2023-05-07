@@ -1,5 +1,6 @@
 import { rollupBuild } from "./packages/rollup/src";
 
+// prepare package release
 const start = async () => {
   await rollupBuild({ packageName: "axios", packageScope: "packages" });
   await rollupBuild({ packageName: "eslint", packageScope: "packages" });
