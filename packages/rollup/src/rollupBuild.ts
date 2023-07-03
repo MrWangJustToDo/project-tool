@@ -25,9 +25,11 @@ const build = async (packageName: string, rollupOptions: RollupOptions, mode: st
 export const rollupBuild = async (options: Options) => {
   const aliasName = options.alias || options.packageName;
 
-  const { singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, multipleProdOther, multipleProdUMD } = await getRollupConfigs(options);
+  const { singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, multipleProdOther, multipleProdUMD, type } = await getRollupConfigs(options);
 
   const all: Array<() => void> = [];
+
+  type.map((config) => all.push(() => build(aliasName, config, "type", "type")));
 
   singleOther.map((config) => all.push(() => build(aliasName, config, "process.env", (config.output as OutputOptions[]).map((v) => v.format).join("&"))));
 

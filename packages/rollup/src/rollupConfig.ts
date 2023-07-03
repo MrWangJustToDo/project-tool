@@ -1,6 +1,7 @@
 import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
+import terser from "@rollup/plugin-terser";
 import fs from "fs";
 import { readFile, access } from "fs/promises";
 import cloneDeep from "lodash/cloneDeep";
@@ -36,38 +37,34 @@ const checkFileExist = (path: string) => {
     .catch(() => false);
 };
 
-const tsConfig = (absolutePath: string, mode: Mode) => {
+const tsConfig = (absolutePath: string, mode: Mode, type?: "type") => {
   return typescript({
     clean: true,
     tsconfig: resolve(absolutePath, "tsconfig.json"),
-    useTsconfigDeclarationDir: true,
+    useTsconfigDeclarationDir: type === "type" ? true : false,
     tsconfigOverride: {
       compilerOptions: {
-        composite: mode === "development" ? true : false,
-        sourceMap: mode === "development" ? true : false,
-        declaration: mode === "development" ? true : false,
-        declarationMap: mode === "development" ? true : false,
-        declarationDir: mode === "development" ? "dist/types" : null,
+        composite: type === "type" ? true : false,
+        sourceMap: (mode === "process.env" || mode === "development") && type !== "type" ? true : false,
+        declaration: type === "type" ? true : false,
+        noEmit: type === "type",
+        declarationDir: type === "type" ? "dist/types" : null,
       },
     },
   });
 };
 
-const transformBuildOptions = (
+const transformMultipleBuildConfig = (
   options: RollupOptions,
   packageFileObject: Record<string, any>,
   absolutePath: string,
   mode: Mode,
-  external?: RollupOptions["external"]
+  configOption: Options
 ): {
-  singleOther?: RollupOptions;
-  singleUMD?: RollupOptions;
   multipleOther?: RollupOptions;
   multipleUMD?: RollupOptions;
 } => {
   const allOptions: {
-    singleOther?: RollupOptions;
-    singleUMD?: RollupOptions;
     multipleOther?: RollupOptions;
     multipleUMD?: RollupOptions;
   } = {};
@@ -76,39 +73,44 @@ const transformBuildOptions = (
   }
   if (options.output) {
     options.output = Array.isArray(options.output) ? options.output : [options.output];
-    const singleConfig = options.output.filter((output: MultipleOutput) => !output.multiple);
-    const singleOtherConfig = singleConfig.filter((output) => output.format !== "umd");
-    const singleUMDConfig = singleConfig.filter((output) => output.format === "umd");
-    const multipleConfig = options.output.filter((output: MultipleOutput) => output.multiple);
-    const multipleOtherConfig = multipleConfig.filter((output) => output.format !== "umd");
-    const multipleUMDConfig = multipleConfig.filter((output) => output.format === "umd");
+    const multipleOutput = options.output.filter((output: MultipleOutput) => output.multiple);
 
     const umdGlobalIgnore: string[] = [];
 
-    options.output = options.output.map((output: MultipleOutput) => {
+    options.output = multipleOutput.map((output: MultipleOutput) => {
       if (output.dir && !output.dir.startsWith(absolutePath)) {
         output.dir = resolve(absolutePath, output.dir);
-        if (output.multiple) {
+        if (configOption.multipleNameTransform) {
+          output.entryFileNames = configOption.multipleNameTransform(output.entryFileNames as string, mode);
+        } else {
           const typedEntryFileNames = output.entryFileNames as string;
           const lastIndexofDote = typedEntryFileNames.lastIndexOf(".");
           output.entryFileNames = `${typedEntryFileNames.slice(0, lastIndexofDote)}.${mode}${typedEntryFileNames.slice(lastIndexofDote)}`;
-          delete output.multiple;
         }
+        delete output.multiple;
       }
       if (output.file && !output.file.startsWith(absolutePath)) {
         output.file = resolve(absolutePath, output.file);
-        if (output.multiple) {
+        if (configOption.multipleNameTransform) {
+          output.file = configOption.multipleNameTransform(output.file, mode);
+        } else {
           const typedEntryFileNames = output.file as string;
           const lastIndexofDote = typedEntryFileNames.lastIndexOf(".");
           output.file = `${typedEntryFileNames.slice(0, lastIndexofDote)}.${mode}${typedEntryFileNames.slice(lastIndexofDote)}`;
-          delete output.multiple;
         }
+        delete output.multiple;
       }
+      return output;
+    });
+
+    const multipleOtherConfig = options.output.filter((output) => output.format !== "umd");
+    const multipleUMDConfig = options.output.filter((output) => output.format === "umd");
+
+    multipleUMDConfig.forEach((output) => {
       if (output.globals) {
         const allGlobal = Object.keys(output.globals);
         umdGlobalIgnore.push(...allGlobal);
       }
-      return output;
     });
 
     options.onwarn = (msg, warn) => {
@@ -117,57 +119,11 @@ const transformBuildOptions = (
       }
     };
 
-    if (singleOtherConfig.length) {
-      allOptions.singleOther = {
-        ...options,
-        output: singleOtherConfig,
-        external: external || ((id) => id.includes("node_modules")),
-        plugins: [
-          nodeResolve(),
-          commonjs({ exclude: "node_modules" }),
-          replace(
-            packageFileObject["name"] === "@project-tool/rollup"
-              ? {}
-              : {
-                  __DEV__: 'process.env.NODE_ENV === "development"',
-                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                  preventAssignment: true,
-                }
-          ),
-          tsConfig(absolutePath, mode),
-        ],
-      };
-    }
-
-    if (singleUMDConfig.length) {
-      allOptions.singleUMD = {
-        ...options,
-        output: singleUMDConfig,
-        external: (id) => {
-          if (umdGlobalIgnore.some((name) => id.endsWith(name))) return true;
-        },
-        plugins: [
-          nodeResolve(),
-          commonjs({ exclude: "node_modules" }),
-          replace(
-            packageFileObject["name"] === "@project-tool/rollup"
-              ? {}
-              : {
-                  __DEV__: 'process.env.NODE_ENV === "development"',
-                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                  preventAssignment: true,
-                }
-          ),
-          tsConfig(absolutePath, mode),
-        ],
-      };
-    }
-
     if (multipleOtherConfig.length) {
       allOptions.multipleOther = {
         ...options,
         output: multipleOtherConfig,
-        external: external || ((id) => id.includes("node_modules")),
+        external: configOption.external || ((id) => id.includes("node_modules")),
         plugins: [
           nodeResolve(),
           commonjs({ exclude: "node_modules" }),
@@ -181,7 +137,6 @@ const transformBuildOptions = (
                 }
           ),
           tsConfig(absolutePath, mode),
-          // mode === "production" ? terser() : null,
         ],
       };
     }
@@ -207,6 +162,129 @@ const transformBuildOptions = (
                 }
           ),
           tsConfig(absolutePath, mode),
+          mode === "production" ? terser() : null,
+        ],
+      };
+    }
+  }
+
+  return allOptions;
+};
+
+const transformSingleBuildConfig = (
+  options: RollupOptions,
+  packageFileObject: Record<string, any>,
+  absolutePath: string,
+  configOption: Options
+): {
+  type?: RollupOptions;
+  singleOther?: RollupOptions;
+  singleUMD?: RollupOptions;
+} => {
+  const allOptions: {
+    type?: RollupOptions;
+    singleOther?: RollupOptions;
+    singleUMD?: RollupOptions;
+  } = {};
+
+  if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
+    options.input = resolve(absolutePath, options.input);
+  }
+
+  if (options.output) {
+    options.output = Array.isArray(options.output) ? options.output : [options.output];
+    const singleOutput = options.output.filter((output: MultipleOutput) => !output.multiple);
+
+    const umdGlobalIgnore: string[] = [];
+
+    options.output = singleOutput.map((output) => {
+      if (output.dir && !output.dir.startsWith(absolutePath)) {
+        output.dir = resolve(absolutePath, output.dir);
+      }
+      if (output.file && !output.file.startsWith(absolutePath)) {
+        output.file = resolve(absolutePath, output.file);
+      }
+      return output;
+    });
+
+    const singleOther = options.output.filter((output) => output.format !== "umd");
+    const singleUMD = options.output.filter((output) => output.format === "umd");
+
+    singleUMD.forEach((output) => {
+      if (output.globals) {
+        const allGlobal = Object.keys(output.globals);
+        umdGlobalIgnore.push(...allGlobal);
+      }
+    });
+
+    options.onwarn = (msg, warn) => {
+      if (!/Circular/.test(msg.message)) {
+        warn(msg);
+      }
+    };
+
+    allOptions.type = {
+      ...options,
+      output: singleOther,
+      external: configOption.external || ((id) => id.includes("node_modules")),
+      plugins: [
+        nodeResolve(),
+        commonjs({ exclude: "node_modules" }),
+        replace(
+          packageFileObject["name"] === "@project-tool/rollup"
+            ? {}
+            : {
+                __DEV__: 'process.env.NODE_ENV === "development"',
+                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                preventAssignment: true,
+              }
+        ),
+        tsConfig(absolutePath, "process.env", "type"),
+      ],
+    };
+
+    if (singleOther.length) {
+      allOptions.singleOther = {
+        ...options,
+        output: singleOther,
+        external: configOption.external || ((id) => id.includes("node_modules")),
+        plugins: [
+          nodeResolve(),
+          commonjs({ exclude: "node_modules" }),
+          replace(
+            packageFileObject["name"] === "@project-tool/rollup"
+              ? {}
+              : {
+                  __DEV__: 'process.env.NODE_ENV === "development"',
+                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                  preventAssignment: true,
+                }
+          ),
+          tsConfig(absolutePath, "process.env"),
+        ],
+      };
+    }
+
+    if (singleUMD.length) {
+      allOptions.singleUMD = {
+        ...options,
+        output: singleUMD,
+        external: (id) => {
+          if (umdGlobalIgnore.some((name) => id.endsWith(name))) return true;
+        },
+        plugins: [
+          nodeResolve(),
+          commonjs({ exclude: "node_modules" }),
+          replace(
+            packageFileObject["name"] === "@project-tool/rollup"
+              ? {}
+              : {
+                  __DEV__: JSON.stringify(true),
+                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                  preventAssignment: true,
+                }
+          ),
+          tsConfig(absolutePath, "process.env"),
         ],
       };
     }
@@ -232,16 +310,19 @@ const flattenRollupConfig = (
     throw new Error(`current package "${packageName}" not have a output config`);
   }
 
-  const allRollupOptions = modes.map((mode) => transformBuildOptions(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode, options.external));
+  const allMultipleRollupOptions = modes.map((mode) => transformMultipleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode, options));
 
-  const allDevBuild = allRollupOptions[0];
+  const allSingleRollupOptions = transformSingleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, options);
 
-  const allProdBuild = allRollupOptions[1];
+  const allDevBuild = allMultipleRollupOptions[0];
 
-  // single build bundle base on current process env, so only need build once
-  const singleOther = allDevBuild["singleOther"];
+  const allProdBuild = allMultipleRollupOptions[1];
 
-  const singleDevUMD = allDevBuild["singleUMD"];
+  const type = allSingleRollupOptions["type"];
+
+  const singleOther = allSingleRollupOptions["singleOther"];
+
+  const singleDevUMD = allSingleRollupOptions["singleUMD"];
 
   const multipleDevOther = allDevBuild["multipleOther"];
 
@@ -252,6 +333,7 @@ const flattenRollupConfig = (
   const multipleProdUMD = allProdBuild["multipleUMD"];
 
   return {
+    type,
     singleOther,
     singleDevUMD,
     multipleDevOther,
@@ -308,6 +390,7 @@ export const getRollupConfigs = async (options: Options) => {
   const all = rollupConfig.map((config) => flattenRollupConfig(config, packageName, packageFileObject, absolutePath, options));
 
   return {
+    type: all.map((i) => i.type).filter(filterFun),
     singleOther: all.map((i) => i.singleOther).filter(filterFun),
     singleDevUMD: all.map((i) => i.singleDevUMD).filter(filterFun),
     multipleDevOther: all.map((i) => i.multipleDevOther).filter(filterFun),

@@ -1,6 +1,7 @@
 import type { Options } from "./type";
 import type { RollupOptions } from "rollup";
 export declare const getRollupConfigs: (options: Options) => Promise<{
+    type: RollupOptions[];
     singleOther: RollupOptions[];
     singleDevUMD: RollupOptions[];
     multipleDevOther: RollupOptions[];
@@ -8,4 +9,3 @@ export declare const getRollupConfigs: (options: Options) => Promise<{
     multipleProdOther: RollupOptions[];
     multipleProdUMD: RollupOptions[];
 }>;
-//# sourceMappingURL=rollupConfig.d.ts.map

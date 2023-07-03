@@ -1,6 +1,6 @@
 import type { OutputOptions, RollupOptions } from "rollup";
 
-export type Mode = "production" | "development";
+export type Mode = "production" | "development" | 'process.env';
 
 export type Type = "cjs" | "esm" | "umd" | string;
 
@@ -13,4 +13,5 @@ export type Options = {
   alias?: string;
   packageScope?: string;
   external?: RollupOptions["external"];
+  multipleNameTransform?: (name: string, mode: Mode) => string; 
 };

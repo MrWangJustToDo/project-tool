@@ -5,4 +5,3 @@ export type BaseCreateOptions = AxiosRequestConfig & {
     requestInterceptors?: RequestInterceptor;
     responseInterceptors?: ResponseInterceptor;
 };
-//# sourceMappingURL=type.d.ts.map

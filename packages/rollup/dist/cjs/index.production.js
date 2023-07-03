@@ -6,6 +6,7 @@ var pretty = require('pino-pretty');
 var commonjs = require('@rollup/plugin-commonjs');
 var pluginNodeResolve = require('@rollup/plugin-node-resolve');
 var replace = require('@rollup/plugin-replace');
+var terser = require('@rollup/plugin-terser');
 var fs = require('fs');
 var promises = require('fs/promises');
 var cloneDeep = require('lodash/cloneDeep');
@@ -123,23 +124,23 @@ var checkFileExist = function (path) {
         .then(function () { return true; })
         .catch(function () { return false; });
 };
-var tsConfig = function (absolutePath, mode) {
+var tsConfig = function (absolutePath, mode, type) {
     return typescript({
         clean: true,
         tsconfig: path.resolve(absolutePath, "tsconfig.json"),
-        useTsconfigDeclarationDir: true,
+        useTsconfigDeclarationDir: type === "type" ? true : false,
         tsconfigOverride: {
             compilerOptions: {
-                composite: mode === "development" ? true : false,
-                sourceMap: mode === "development" ? true : false,
-                declaration: mode === "development" ? true : false,
-                declarationMap: mode === "development" ? true : false,
-                declarationDir: mode === "development" ? "dist/types" : null,
+                composite: type === "type" ? true : false,
+                sourceMap: (mode === "process.env" || mode === "development") && type !== "type" ? true : false,
+                declaration: type === "type" ? true : false,
+                noEmit: type === "type",
+                declarationDir: type === "type" ? "dist/types" : null,
             },
         },
     });
 };
-var transformBuildOptions = function (options, packageFileObject, absolutePath, mode, external) {
+var transformMultipleBuildConfig = function (options, packageFileObject, absolutePath, mode, configOption) {
     var _a;
     var allOptions = {};
     if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
@@ -147,76 +148,50 @@ var transformBuildOptions = function (options, packageFileObject, absolutePath, 
     }
     if (options.output) {
         options.output = Array.isArray(options.output) ? options.output : [options.output];
-        var singleConfig = options.output.filter(function (output) { return !output.multiple; });
-        var singleOtherConfig = singleConfig.filter(function (output) { return output.format !== "umd"; });
-        var singleUMDConfig = singleConfig.filter(function (output) { return output.format === "umd"; });
-        var multipleConfig = options.output.filter(function (output) { return output.multiple; });
-        var multipleOtherConfig = multipleConfig.filter(function (output) { return output.format !== "umd"; });
-        var multipleUMDConfig = multipleConfig.filter(function (output) { return output.format === "umd"; });
+        var multipleOutput = options.output.filter(function (output) { return output.multiple; });
         var umdGlobalIgnore_1 = [];
-        options.output = options.output.map(function (output) {
+        options.output = multipleOutput.map(function (output) {
             if (output.dir && !output.dir.startsWith(absolutePath)) {
                 output.dir = path.resolve(absolutePath, output.dir);
-                if (output.multiple) {
+                if (configOption.multipleNameTransform) {
+                    output.entryFileNames = configOption.multipleNameTransform(output.entryFileNames, mode);
+                }
+                else {
                     var typedEntryFileNames = output.entryFileNames;
                     var lastIndexofDote = typedEntryFileNames.lastIndexOf(".");
                     output.entryFileNames = "".concat(typedEntryFileNames.slice(0, lastIndexofDote), ".").concat(mode).concat(typedEntryFileNames.slice(lastIndexofDote));
-                    delete output.multiple;
                 }
+                delete output.multiple;
             }
             if (output.file && !output.file.startsWith(absolutePath)) {
                 output.file = path.resolve(absolutePath, output.file);
-                if (output.multiple) {
+                if (configOption.multipleNameTransform) {
+                    output.file = configOption.multipleNameTransform(output.file, mode);
+                }
+                else {
                     var typedEntryFileNames = output.file;
                     var lastIndexofDote = typedEntryFileNames.lastIndexOf(".");
                     output.file = "".concat(typedEntryFileNames.slice(0, lastIndexofDote), ".").concat(mode).concat(typedEntryFileNames.slice(lastIndexofDote));
-                    delete output.multiple;
                 }
+                delete output.multiple;
             }
+            return output;
+        });
+        var multipleOtherConfig = options.output.filter(function (output) { return output.format !== "umd"; });
+        var multipleUMDConfig = options.output.filter(function (output) { return output.format === "umd"; });
+        multipleUMDConfig.forEach(function (output) {
             if (output.globals) {
                 var allGlobal = Object.keys(output.globals);
                 umdGlobalIgnore_1.push.apply(umdGlobalIgnore_1, allGlobal);
             }
-            return output;
         });
         options.onwarn = function (msg, warn) {
             if (!/Circular/.test(msg.message)) {
                 warn(msg);
             }
         };
-        if (singleOtherConfig.length) {
-            allOptions.singleOther = __assign(__assign({}, options), { output: singleOtherConfig, external: external || (function (id) { return id.includes("node_modules"); }), plugins: [
-                    pluginNodeResolve.nodeResolve(),
-                    commonjs({ exclude: "node_modules" }),
-                    replace(packageFileObject["name"] === "@project-tool/rollup"
-                        ? {}
-                        : {
-                            __DEV__: 'process.env.NODE_ENV === "development"',
-                            __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                            preventAssignment: true,
-                        }),
-                    tsConfig(absolutePath, mode),
-                ] });
-        }
-        if (singleUMDConfig.length) {
-            allOptions.singleUMD = __assign(__assign({}, options), { output: singleUMDConfig, external: function (id) {
-                    if (umdGlobalIgnore_1.some(function (name) { return id.endsWith(name); }))
-                        return true;
-                }, plugins: [
-                    pluginNodeResolve.nodeResolve(),
-                    commonjs({ exclude: "node_modules" }),
-                    replace(packageFileObject["name"] === "@project-tool/rollup"
-                        ? {}
-                        : {
-                            __DEV__: 'process.env.NODE_ENV === "development"',
-                            __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                            preventAssignment: true,
-                        }),
-                    tsConfig(absolutePath, mode),
-                ] });
-        }
         if (multipleOtherConfig.length) {
-            allOptions.multipleOther = __assign(__assign({}, options), { output: multipleOtherConfig, external: external || (function (id) { return id.includes("node_modules"); }), plugins: [
+            allOptions.multipleOther = __assign(__assign({}, options), { output: multipleOtherConfig, external: configOption.external || (function (id) { return id.includes("node_modules"); }), plugins: [
                     pluginNodeResolve.nodeResolve(),
                     commonjs({ exclude: "node_modules" }),
                     replace(packageFileObject["name"] === "@project-tool/rollup"
@@ -227,7 +202,6 @@ var transformBuildOptions = function (options, packageFileObject, absolutePath, 
                             preventAssignment: true,
                         }),
                     tsConfig(absolutePath, mode),
-                    // mode === "production" ? terser() : null,
                 ] });
         }
         if (multipleUMDConfig.length) {
@@ -247,6 +221,84 @@ var transformBuildOptions = function (options, packageFileObject, absolutePath, 
                             _a.preventAssignment = true,
                             _a)),
                     tsConfig(absolutePath, mode),
+                    mode === "production" ? terser() : null,
+                ] });
+        }
+    }
+    return allOptions;
+};
+var transformSingleBuildConfig = function (options, packageFileObject, absolutePath, configOption) {
+    var allOptions = {};
+    if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
+        options.input = path.resolve(absolutePath, options.input);
+    }
+    if (options.output) {
+        options.output = Array.isArray(options.output) ? options.output : [options.output];
+        var singleOutput = options.output.filter(function (output) { return !output.multiple; });
+        var umdGlobalIgnore_2 = [];
+        options.output = singleOutput.map(function (output) {
+            if (output.dir && !output.dir.startsWith(absolutePath)) {
+                output.dir = path.resolve(absolutePath, output.dir);
+            }
+            if (output.file && !output.file.startsWith(absolutePath)) {
+                output.file = path.resolve(absolutePath, output.file);
+            }
+            return output;
+        });
+        var singleOther = options.output.filter(function (output) { return output.format !== "umd"; });
+        var singleUMD = options.output.filter(function (output) { return output.format === "umd"; });
+        singleUMD.forEach(function (output) {
+            if (output.globals) {
+                var allGlobal = Object.keys(output.globals);
+                umdGlobalIgnore_2.push.apply(umdGlobalIgnore_2, allGlobal);
+            }
+        });
+        options.onwarn = function (msg, warn) {
+            if (!/Circular/.test(msg.message)) {
+                warn(msg);
+            }
+        };
+        allOptions.type = __assign(__assign({}, options), { output: singleOther, external: configOption.external || (function (id) { return id.includes("node_modules"); }), plugins: [
+                pluginNodeResolve.nodeResolve(),
+                commonjs({ exclude: "node_modules" }),
+                replace(packageFileObject["name"] === "@project-tool/rollup"
+                    ? {}
+                    : {
+                        __DEV__: 'process.env.NODE_ENV === "development"',
+                        __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                        preventAssignment: true,
+                    }),
+                tsConfig(absolutePath, "process.env", "type"),
+            ] });
+        if (singleOther.length) {
+            allOptions.singleOther = __assign(__assign({}, options), { output: singleOther, external: configOption.external || (function (id) { return id.includes("node_modules"); }), plugins: [
+                    pluginNodeResolve.nodeResolve(),
+                    commonjs({ exclude: "node_modules" }),
+                    replace(packageFileObject["name"] === "@project-tool/rollup"
+                        ? {}
+                        : {
+                            __DEV__: 'process.env.NODE_ENV === "development"',
+                            __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                            preventAssignment: true,
+                        }),
+                    tsConfig(absolutePath, "process.env"),
+                ] });
+        }
+        if (singleUMD.length) {
+            allOptions.singleUMD = __assign(__assign({}, options), { output: singleUMD, external: function (id) {
+                    if (umdGlobalIgnore_2.some(function (name) { return id.endsWith(name); }))
+                        return true;
+                }, plugins: [
+                    pluginNodeResolve.nodeResolve(),
+                    commonjs({ exclude: "node_modules" }),
+                    replace(packageFileObject["name"] === "@project-tool/rollup"
+                        ? {}
+                        : {
+                            __DEV__: JSON.stringify(true),
+                            __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                            preventAssignment: true,
+                        }),
+                    tsConfig(absolutePath, "process.env"),
                 ] });
         }
     }
@@ -260,17 +312,19 @@ var flattenRollupConfig = function (rollupConfig, packageName, packageFileObject
     if (!rollupConfig.output) {
         throw new Error("current package \"".concat(packageName, "\" not have a output config"));
     }
-    var allRollupOptions = modes.map(function (mode) { return transformBuildOptions(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode, options.external); });
-    var allDevBuild = allRollupOptions[0];
-    var allProdBuild = allRollupOptions[1];
-    // single build bundle base on current process env, so only need build once
-    var singleOther = allDevBuild["singleOther"];
-    var singleDevUMD = allDevBuild["singleUMD"];
+    var allMultipleRollupOptions = modes.map(function (mode) { return transformMultipleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode, options); });
+    var allSingleRollupOptions = transformSingleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, options);
+    var allDevBuild = allMultipleRollupOptions[0];
+    var allProdBuild = allMultipleRollupOptions[1];
+    var type = allSingleRollupOptions["type"];
+    var singleOther = allSingleRollupOptions["singleOther"];
+    var singleDevUMD = allSingleRollupOptions["singleUMD"];
     var multipleDevOther = allDevBuild["multipleOther"];
     var multipleDevUMD = allDevBuild["multipleUMD"];
     var multipleProdOther = allProdBuild["multipleOther"];
     var multipleProdUMD = allProdBuild["multipleUMD"];
     return {
+        type: type,
         singleOther: singleOther,
         singleDevUMD: singleDevUMD,
         multipleDevOther: multipleDevOther,
@@ -319,6 +373,7 @@ var getRollupConfigs = function (options) { return __awaiter(void 0, void 0, voi
                 }
                 all = rollupConfig.map(function (config) { return flattenRollupConfig(config, packageName, packageFileObject, absolutePath, options); });
                 return [2 /*return*/, {
+                        type: all.map(function (i) { return i.type; }).filter(filterFun),
                         singleOther: all.map(function (i) { return i.singleOther; }).filter(filterFun),
                         singleDevUMD: all.map(function (i) { return i.singleDevUMD; }).filter(filterFun),
                         multipleDevOther: all.map(function (i) { return i.multipleDevOther; }).filter(filterFun),
@@ -364,15 +419,16 @@ var build = function (packageName, rollupOptions, mode, type) { return __awaiter
     });
 }); };
 var rollupBuild = function (options) { return __awaiter(void 0, void 0, void 0, function () {
-    var aliasName, _a, singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, multipleProdOther, multipleProdUMD, all;
+    var aliasName, _a, singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, multipleProdOther, multipleProdUMD, type, all;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 aliasName = options.alias || options.packageName;
                 return [4 /*yield*/, getRollupConfigs(options)];
             case 1:
-                _a = _b.sent(), singleOther = _a.singleOther, singleDevUMD = _a.singleDevUMD, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD, multipleProdOther = _a.multipleProdOther, multipleProdUMD = _a.multipleProdUMD;
+                _a = _b.sent(), singleOther = _a.singleOther, singleDevUMD = _a.singleDevUMD, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD, multipleProdOther = _a.multipleProdOther, multipleProdUMD = _a.multipleProdUMD, type = _a.type;
                 all = [];
+                type.map(function (config) { return all.push(function () { return build(aliasName, config, "type", "type"); }); });
                 singleOther.map(function (config) { return all.push(function () { return build(aliasName, config, "process.env", config.output.map(function (v) { return v.format; }).join("&")); }); });
                 singleDevUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); }); });
                 multipleDevOther.map(function (config) { return all.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); }); });
