@@ -134,8 +134,9 @@ var tsConfig = function (absolutePath, mode, type) {
                 composite: type === "type" ? true : false,
                 sourceMap: (mode === "process.env" || mode === "development") && type !== "type" ? true : false,
                 declaration: type === "type" ? true : false,
-                noEmit: type === "type",
+                declarationMap: type === "type" ? true : false,
                 declarationDir: type === "type" ? "dist/types" : null,
+                noEmit: type === "type",
             },
         },
     });
@@ -419,26 +420,39 @@ var build = function (packageName, rollupOptions, mode, type) { return __awaiter
     });
 }); };
 var rollupBuild = function (options) { return __awaiter(void 0, void 0, void 0, function () {
-    var aliasName, _a, singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, multipleProdOther, multipleProdUMD, type, all;
+    var aliasName, _a, singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, multipleProdOther, multipleProdUMD, type, all_1, e_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 aliasName = options.alias || options.packageName;
-                return [4 /*yield*/, getRollupConfigs(options)];
+                _b.label = 1;
             case 1:
-                _a = _b.sent(), singleOther = _a.singleOther, singleDevUMD = _a.singleDevUMD, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD, multipleProdOther = _a.multipleProdOther, multipleProdUMD = _a.multipleProdUMD, type = _a.type;
-                all = [];
-                type.map(function (config) { return all.push(function () { return build(aliasName, config, "type", "type"); }); });
-                singleOther.map(function (config) { return all.push(function () { return build(aliasName, config, "process.env", config.output.map(function (v) { return v.format; }).join("&")); }); });
-                singleDevUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); }); });
-                multipleDevOther.map(function (config) { return all.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); }); });
-                multipleDevUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); }); });
-                multipleProdOther.map(function (config) { return all.push(function () { return build(aliasName, config, "production", config.output.map(function (v) { return v.format; }).join("&")); }); });
-                multipleProdUMD.map(function (config) { return all.push(function () { return build(aliasName, config, "production", config.output.map(function (v) { return v.format; }).join("&")); }); });
-                return [4 /*yield*/, Promise.all(all.map(function (f) { return f(); }))];
+                _b.trys.push([1, 4, , 5]);
+                return [4 /*yield*/, getRollupConfigs(options)];
             case 2:
+                _a = _b.sent(), singleOther = _a.singleOther, singleDevUMD = _a.singleDevUMD, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD, multipleProdOther = _a.multipleProdOther, multipleProdUMD = _a.multipleProdUMD, type = _a.type;
+                all_1 = [];
+                type.map(function (config) { return all_1.push(function () { return build(aliasName, config, "type", "type"); }); });
+                singleOther.map(function (config) { return all_1.push(function () { return build(aliasName, config, "process.env", config.output.map(function (v) { return v.format; }).join("&")); }); });
+                singleDevUMD.map(function (config) { return all_1.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); }); });
+                multipleDevOther.map(function (config) {
+                    return all_1.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); });
+                });
+                multipleDevUMD.map(function (config) { return all_1.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); }); });
+                multipleProdOther.map(function (config) {
+                    return all_1.push(function () { return build(aliasName, config, "production", config.output.map(function (v) { return v.format; }).join("&")); });
+                });
+                multipleProdUMD.map(function (config) { return all_1.push(function () { return build(aliasName, config, "production", config.output.map(function (v) { return v.format; }).join("&")); }); });
+                return [4 /*yield*/, Promise.all(all_1.map(function (f) { return f(); }))];
+            case 3:
                 _b.sent();
-                return [2 /*return*/];
+                return [3 /*break*/, 5];
+            case 4:
+                e_2 = _b.sent();
+                logger().error(e_2 === null || e_2 === void 0 ? void 0 : e_2.message);
+                process.exit(1);
+                return [3 /*break*/, 5];
+            case 5: return [2 /*return*/];
         }
     });
 }); };
@@ -466,18 +480,27 @@ var watch = function (packageName, rollupOptions, mode, type) {
     });
 };
 var rollupWatch = function (options) { return __awaiter(void 0, void 0, void 0, function () {
-    var aliasName, _a, singleOther, multipleDevOther, multipleDevUMD;
+    var aliasName, _a, singleOther, multipleDevOther, multipleDevUMD, e_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 aliasName = options.alias || options.packageName;
-                return [4 /*yield*/, getRollupConfigs(options)];
+                _b.label = 1;
             case 1:
+                _b.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, getRollupConfigs(options)];
+            case 2:
                 _a = _b.sent(), singleOther = _a.singleOther, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD;
                 singleOther.forEach(function (config) { return watch(aliasName, config, "process.env", config.output.map(function (v) { return v.format; }).join("&")); });
                 multipleDevOther.forEach(function (config) { return watch(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); });
                 multipleDevUMD.forEach(function (config) { return watch(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); });
-                return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 3:
+                e_1 = _b.sent();
+                logger().error(e_1 === null || e_1 === void 0 ? void 0 : e_1.message);
+                process.exit(1);
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };

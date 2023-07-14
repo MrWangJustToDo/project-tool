@@ -11,3 +11,4 @@ export type Options = {
     external?: RollupOptions["external"];
     multipleNameTransform?: (name: string, mode: Mode) => string;
 };
+//# sourceMappingURL=type.d.ts.map

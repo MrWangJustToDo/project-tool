@@ -9,3 +9,4 @@ export declare const getRollupConfigs: (options: Options) => Promise<{
     multipleProdOther: RollupOptions[];
     multipleProdUMD: RollupOptions[];
 }>;
+//# sourceMappingURL=rollupConfig.d.ts.map

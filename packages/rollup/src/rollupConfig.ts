@@ -47,8 +47,9 @@ const tsConfig = (absolutePath: string, mode: Mode, type?: "type") => {
         composite: type === "type" ? true : false,
         sourceMap: (mode === "process.env" || mode === "development") && type !== "type" ? true : false,
         declaration: type === "type" ? true : false,
-        noEmit: type === "type",
+        declarationMap: type === "type" ? true : false,
         declarationDir: type === "type" ? "dist/types" : null,
+        noEmit: type === "type",
       },
     },
   });

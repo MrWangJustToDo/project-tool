@@ -4,7 +4,7 @@ import { logger } from "./log";
 import { getRollupConfigs } from "./rollupConfig";
 
 import type { Type, Options } from "./type";
-import type { RollupOptions , OutputOptions} from "rollup";
+import type { RollupOptions, OutputOptions } from "rollup";
 
 const watch = (packageName: string, rollupOptions: RollupOptions, mode: string, type: Type) => {
   rollupOptions.watch = {
@@ -35,11 +35,16 @@ const watch = (packageName: string, rollupOptions: RollupOptions, mode: string, 
 export const rollupWatch = async (options: Options) => {
   const aliasName = options.alias || options.packageName;
 
-  const { singleOther, multipleDevOther, multipleDevUMD } = await getRollupConfigs(options);
+  try {
+    const { singleOther, multipleDevOther, multipleDevUMD } = await getRollupConfigs(options);
 
-  singleOther.forEach((config) => watch(aliasName, config, "process.env", (config.output as OutputOptions[]).map((v) => v.format).join("&")));
+    singleOther.forEach((config) => watch(aliasName, config, "process.env", (config.output as OutputOptions[]).map((v) => v.format).join("&")));
 
-  multipleDevOther.forEach((config) => watch(aliasName, config, "development", (config.output as OutputOptions[]).map((v) => v.format).join("&")));
+    multipleDevOther.forEach((config) => watch(aliasName, config, "development", (config.output as OutputOptions[]).map((v) => v.format).join("&")));
 
-  multipleDevUMD.forEach((config) => watch(aliasName, config, "development", (config.output as OutputOptions[]).map((v) => v.format).join("&")));
+    multipleDevUMD.forEach((config) => watch(aliasName, config, "development", (config.output as OutputOptions[]).map((v) => v.format).join("&")));
+  } catch (e) {
+    logger().error((e as Error)?.message);
+    process.exit(1);
+  }
 };
