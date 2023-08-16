@@ -10,8 +10,7 @@ import typescript from "rollup-plugin-typescript2";
 
 import { safeParse } from "./safeParse";
 
-import type { Mode, MultipleOutput, Options } from "./type";
-import type { RollupOptions } from "rollup";
+import type { Mode, MultipleOutput, Options, RollupOptions } from "./type";
 
 const defaultBuildOptions: RollupOptions = {
   input: "./src/index.ts",

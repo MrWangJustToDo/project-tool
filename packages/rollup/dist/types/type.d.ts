@@ -1,6 +1,9 @@
-import type { OutputOptions, RollupOptions } from "rollup";
-export type Mode = "production" | "development" | 'process.env';
+import type { OutputOptions, RollupOptions as _RollupOptions } from "rollup";
+export type Mode = "production" | "development" | "process.env";
 export type Type = "cjs" | "esm" | "umd" | string;
+export type RollupOptions = _RollupOptions & {
+    pkgName?: string;
+};
 export type MultipleOutput = OutputOptions & {
     multiple?: boolean;
 };

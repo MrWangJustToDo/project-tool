@@ -1,3 +1,4 @@
+import uniq from "lodash/uniq";
 import { watch as rollup } from "rollup";
 
 import { logger } from "./log";
@@ -38,11 +39,26 @@ export const rollupWatch = async (options: Options) => {
   try {
     const { singleOther, multipleDevOther, multipleDevUMD } = await getRollupConfigs(options);
 
-    singleOther.forEach((config) => watch(aliasName, config, "process.env", (config.output as OutputOptions[]).map((v) => v.format).join("&")));
+    singleOther.forEach((config) => {
+      const pkgName = config.pkgName;
+      const name = pkgName ? aliasName + "/" + pkgName : aliasName;
+      delete config.pkgName;
+      watch(name, config, "process.env", uniq((config.output as OutputOptions[]).map((v) => v.format)).join("&"));
+    });
 
-    multipleDevOther.forEach((config) => watch(aliasName, config, "development", (config.output as OutputOptions[]).map((v) => v.format).join("&")));
+    multipleDevOther.forEach((config) => {
+      const pkgName = config.pkgName;
+      const name = pkgName ? aliasName + "/" + pkgName : aliasName;
+      delete config.pkgName;
+      watch(name, config, "development", uniq((config.output as OutputOptions[]).map((v) => v.format)).join("&"));
+    });
 
-    multipleDevUMD.forEach((config) => watch(aliasName, config, "development", (config.output as OutputOptions[]).map((v) => v.format).join("&")));
+    multipleDevUMD.forEach((config) => {
+      const pkgName = config.pkgName;
+      const name = pkgName ? aliasName + "/" + pkgName : aliasName;
+      delete config.pkgName;
+      watch(name, config, "development", uniq((config.output as OutputOptions[]).map((v) => v.format)).join("&"));
+    });
   } catch (e) {
     logger().error((e as Error)?.message);
     process.exit(1);

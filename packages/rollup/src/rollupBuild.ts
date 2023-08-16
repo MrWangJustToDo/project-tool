@@ -1,3 +1,4 @@
+import uniq from "lodash/uniq";
 import { rollup } from "rollup";
 
 import { logger } from "./log";
@@ -30,23 +31,54 @@ export const rollupBuild = async (options: Options) => {
 
     const all: Array<() => void> = [];
 
-    type.map((config) => all.push(() => build(aliasName, config, "type", "type")));
+    type.map((config) => {
+      const pkgName = config.pkgName;
+      const name = pkgName ? aliasName + "/" + pkgName : aliasName;
+      delete config.pkgName;
+      all.push(() => build(name, config, "type", "type"));
+    });
 
-    singleOther.map((config) => all.push(() => build(aliasName, config, "process.env", (config.output as OutputOptions[]).map((v) => v.format).join("&"))));
+    singleOther.map((config) => {
+      const pkgName = config.pkgName;
+      const name = pkgName ? aliasName + "/" + pkgName : aliasName;
+      delete config.pkgName;
+      all.push(() => build(name, config, "process.env", uniq((config.output as OutputOptions[]).map((v) => v.format)).join("&")));
+    });
 
-    singleDevUMD.map((config) => all.push(() => build(aliasName, config, "development", (config.output as OutputOptions[]).map((v) => v.format).join("&"))));
+    singleDevUMD.map((config) => {
+      const pkgName = config.pkgName;
+      const name = pkgName ? aliasName + "/" + pkgName : aliasName;
+      delete config.pkgName;
+      all.push(() => build(name, config, "development", uniq((config.output as OutputOptions[]).map((v) => v.format)).join("&")));
+    });
 
-    multipleDevOther.map((config) =>
-      all.push(() => build(aliasName, config, "development", (config.output as OutputOptions[]).map((v) => v.format).join("&")))
-    );
+    multipleDevOther.map((config) => {
+      const pkgName = config.pkgName;
+      const name = pkgName ? aliasName + "/" + pkgName : aliasName;
+      delete config.pkgName;
+      all.push(() => build(name, config, "development", uniq((config.output as OutputOptions[]).map((v) => v.format)).join("&")));
+    });
 
-    multipleDevUMD.map((config) => all.push(() => build(aliasName, config, "development", (config.output as OutputOptions[]).map((v) => v.format).join("&"))));
+    multipleDevUMD.map((config) => {
+      const pkgName = config.pkgName;
+      const name = pkgName ? aliasName + "/" + pkgName : aliasName;
+      delete config.pkgName;
+      all.push(() => build(name, config, "development", uniq((config.output as OutputOptions[]).map((v) => v.format)).join("&")));
+    });
 
-    multipleProdOther.map((config) =>
-      all.push(() => build(aliasName, config, "production", (config.output as OutputOptions[]).map((v) => v.format).join("&")))
-    );
+    multipleProdOther.map((config) => {
+      const pkgName = config.pkgName;
+      const name = pkgName ? aliasName + "/" + pkgName : aliasName;
+      delete config.pkgName;
+      all.push(() => build(name, config, "production", uniq((config.output as OutputOptions[]).map((v) => v.format)).join("&")));
+    });
 
-    multipleProdUMD.map((config) => all.push(() => build(aliasName, config, "production", (config.output as OutputOptions[]).map((v) => v.format).join("&"))));
+    multipleProdUMD.map((config) => {
+      const pkgName = config.pkgName;
+      const name = pkgName ? aliasName + "/" + pkgName : aliasName;
+      delete config.pkgName;
+      all.push(() => build(name, config, "production", uniq((config.output as OutputOptions[]).map((v) => v.format)).join("&")));
+    });
 
     await Promise.all(all.map((f) => f()));
   } catch (e) {

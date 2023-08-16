@@ -1,3 +1,4 @@
+import uniq from 'lodash/uniq';
 import { rollup, watch as watch$1 } from 'rollup';
 import { pino } from 'pino';
 import pretty from 'pino-pretty';
@@ -430,17 +431,48 @@ var rollupBuild = function (options) { return __awaiter(void 0, void 0, void 0, 
             case 2:
                 _a = _b.sent(), singleOther = _a.singleOther, singleDevUMD = _a.singleDevUMD, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD, multipleProdOther = _a.multipleProdOther, multipleProdUMD = _a.multipleProdUMD, type = _a.type;
                 all_1 = [];
-                type.map(function (config) { return all_1.push(function () { return build(aliasName, config, "type", "type"); }); });
-                singleOther.map(function (config) { return all_1.push(function () { return build(aliasName, config, "process.env", config.output.map(function (v) { return v.format; }).join("&")); }); });
-                singleDevUMD.map(function (config) { return all_1.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); }); });
+                type.map(function (config) {
+                    var pkgName = config.pkgName;
+                    var name = pkgName ? aliasName + "/" + pkgName : aliasName;
+                    delete config.pkgName;
+                    all_1.push(function () { return build(name, config, "type", "type"); });
+                });
+                singleOther.map(function (config) {
+                    var pkgName = config.pkgName;
+                    var name = pkgName ? aliasName + "/" + pkgName : aliasName;
+                    delete config.pkgName;
+                    all_1.push(function () { return build(name, config, "process.env", uniq(config.output.map(function (v) { return v.format; })).join("&")); });
+                });
+                singleDevUMD.map(function (config) {
+                    var pkgName = config.pkgName;
+                    var name = pkgName ? aliasName + "/" + pkgName : aliasName;
+                    delete config.pkgName;
+                    all_1.push(function () { return build(name, config, "development", uniq(config.output.map(function (v) { return v.format; })).join("&")); });
+                });
                 multipleDevOther.map(function (config) {
-                    return all_1.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); });
+                    var pkgName = config.pkgName;
+                    var name = pkgName ? aliasName + "/" + pkgName : aliasName;
+                    delete config.pkgName;
+                    all_1.push(function () { return build(name, config, "development", uniq(config.output.map(function (v) { return v.format; })).join("&")); });
                 });
-                multipleDevUMD.map(function (config) { return all_1.push(function () { return build(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); }); });
+                multipleDevUMD.map(function (config) {
+                    var pkgName = config.pkgName;
+                    var name = pkgName ? aliasName + "/" + pkgName : aliasName;
+                    delete config.pkgName;
+                    all_1.push(function () { return build(name, config, "development", uniq(config.output.map(function (v) { return v.format; })).join("&")); });
+                });
                 multipleProdOther.map(function (config) {
-                    return all_1.push(function () { return build(aliasName, config, "production", config.output.map(function (v) { return v.format; }).join("&")); });
+                    var pkgName = config.pkgName;
+                    var name = pkgName ? aliasName + "/" + pkgName : aliasName;
+                    delete config.pkgName;
+                    all_1.push(function () { return build(name, config, "production", uniq(config.output.map(function (v) { return v.format; })).join("&")); });
                 });
-                multipleProdUMD.map(function (config) { return all_1.push(function () { return build(aliasName, config, "production", config.output.map(function (v) { return v.format; }).join("&")); }); });
+                multipleProdUMD.map(function (config) {
+                    var pkgName = config.pkgName;
+                    var name = pkgName ? aliasName + "/" + pkgName : aliasName;
+                    delete config.pkgName;
+                    all_1.push(function () { return build(name, config, "production", uniq(config.output.map(function (v) { return v.format; })).join("&")); });
+                });
                 return [4 /*yield*/, Promise.all(all_1.map(function (f) { return f(); }))];
             case 3:
                 _b.sent();
@@ -489,9 +521,24 @@ var rollupWatch = function (options) { return __awaiter(void 0, void 0, void 0, 
                 return [4 /*yield*/, getRollupConfigs(options)];
             case 2:
                 _a = _b.sent(), singleOther = _a.singleOther, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD;
-                singleOther.forEach(function (config) { return watch(aliasName, config, "process.env", config.output.map(function (v) { return v.format; }).join("&")); });
-                multipleDevOther.forEach(function (config) { return watch(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); });
-                multipleDevUMD.forEach(function (config) { return watch(aliasName, config, "development", config.output.map(function (v) { return v.format; }).join("&")); });
+                singleOther.forEach(function (config) {
+                    var pkgName = config.pkgName;
+                    var name = pkgName ? aliasName + "/" + pkgName : aliasName;
+                    delete config.pkgName;
+                    watch(name, config, "process.env", uniq(config.output.map(function (v) { return v.format; })).join("&"));
+                });
+                multipleDevOther.forEach(function (config) {
+                    var pkgName = config.pkgName;
+                    var name = pkgName ? aliasName + "/" + pkgName : aliasName;
+                    delete config.pkgName;
+                    watch(name, config, "development", uniq(config.output.map(function (v) { return v.format; })).join("&"));
+                });
+                multipleDevUMD.forEach(function (config) {
+                    var pkgName = config.pkgName;
+                    var name = pkgName ? aliasName + "/" + pkgName : aliasName;
+                    delete config.pkgName;
+                    watch(name, config, "development", uniq(config.output.map(function (v) { return v.format; })).join("&"));
+                });
                 return [3 /*break*/, 4];
             case 3:
                 e_1 = _b.sent();

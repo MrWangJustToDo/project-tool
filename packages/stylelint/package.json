@@ -34,13 +34,13 @@
     ]
   },
   "dependencies": {
-    "postcss": "^8.4.22",
-    "prettier": "^2.8.8",
-    "stylelint": "^15.6.1",
-    "stylelint-config-standard": "^33.0.0",
-    "stylelint-config-standard-scss": "^9.0.0",
+    "postcss": "^8.4.27",
+    "prettier": "^3.0.1",
+    "stylelint": "^15.10.2",
+    "stylelint-config-standard": "^34.0.0",
+    "stylelint-config-standard-scss": "^10.0.0",
     "stylelint-order": "^6.0.3",
-    "stylelint-prettier": "^3.0.0",
-    "stylelint-scss": "^5.0.0"
+    "stylelint-prettier": "^4.0.2",
+    "stylelint-scss": "^5.1.0"
   }
 }
