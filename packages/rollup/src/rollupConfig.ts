@@ -44,7 +44,7 @@ const tsConfig = (absolutePath: string, mode: Mode, type?: "type") => {
     tsconfigOverride: {
       compilerOptions: {
         composite: type === "type" ? true : false,
-        sourceMap: (mode === "process.env" || mode === "development") && type !== "type" ? true : false,
+        sourceMap: mode === "process.env" || mode === "development" ? true : false,
         declaration: type === "type" ? true : false,
         declarationMap: type === "type" ? true : false,
         declarationDir: type === "type" ? "dist/types" : null,
@@ -59,7 +59,8 @@ const transformMultipleBuildConfig = (
   packageFileObject: Record<string, any>,
   absolutePath: string,
   mode: Mode,
-  configOption: Options
+  configOption: Options,
+  hasSingle: boolean
 ): {
   multipleOther?: RollupOptions;
   multipleUMD?: RollupOptions;
@@ -68,6 +69,9 @@ const transformMultipleBuildConfig = (
     multipleOther?: RollupOptions;
     multipleUMD?: RollupOptions;
   } = {};
+
+  let hasSetType = false;
+
   if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
     options.input = resolve(absolutePath, options.input);
   }
@@ -120,6 +124,11 @@ const transformMultipleBuildConfig = (
     };
 
     if (multipleOtherConfig.length) {
+      let currentTsConfig = tsConfig(absolutePath, mode);
+      if (!hasSingle && mode === "development" && !hasSetType) {
+        hasSetType = true;
+        currentTsConfig = tsConfig(absolutePath, mode, "type");
+      }
       allOptions.multipleOther = {
         ...options,
         output: multipleOtherConfig,
@@ -132,16 +141,22 @@ const transformMultipleBuildConfig = (
               ? {}
               : {
                   __DEV__: mode === "development",
+                  ["process.env.NODE_ENV"]: JSON.stringify(mode),
                   __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
                   preventAssignment: true,
                 }
           ),
-          tsConfig(absolutePath, mode),
+          currentTsConfig,
         ],
       };
     }
 
     if (multipleUMDConfig.length) {
+      let currentTsConfig = tsConfig(absolutePath, mode);
+      if (!hasSingle && mode === "development" && !hasSetType) {
+        hasSetType = true;
+        currentTsConfig = tsConfig(absolutePath, mode, "type");
+      }
       allOptions.multipleUMD = {
         ...options,
         output: multipleUMDConfig,
@@ -161,7 +176,7 @@ const transformMultipleBuildConfig = (
                   preventAssignment: true,
                 }
           ),
-          tsConfig(absolutePath, mode),
+          currentTsConfig,
           mode === "production" ? terser() : null,
         ],
       };
@@ -175,17 +190,18 @@ const transformSingleBuildConfig = (
   options: RollupOptions,
   packageFileObject: Record<string, any>,
   absolutePath: string,
-  configOption: Options
+  configOption: Options,
+  hasSingle: boolean
 ): {
-  type?: RollupOptions;
   singleOther?: RollupOptions;
   singleUMD?: RollupOptions;
 } => {
   const allOptions: {
-    type?: RollupOptions;
     singleOther?: RollupOptions;
     singleUMD?: RollupOptions;
   } = {};
+
+  let hasSetType = false;
 
   if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
     options.input = resolve(absolutePath, options.input);
@@ -223,27 +239,12 @@ const transformSingleBuildConfig = (
       }
     };
 
-    allOptions.type = {
-      ...options,
-      output: singleOther,
-      external: configOption.external || ((id) => id.includes("node_modules")),
-      plugins: [
-        nodeResolve(),
-        commonjs({ exclude: "node_modules" }),
-        replace(
-          packageFileObject["name"] === "@project-tool/rollup"
-            ? {}
-            : {
-                __DEV__: 'process.env.NODE_ENV === "development"',
-                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                preventAssignment: true,
-              }
-        ),
-        tsConfig(absolutePath, "process.env", "type"),
-      ],
-    };
-
     if (singleOther.length) {
+      let currentTsConfig = tsConfig(absolutePath, "process.env");
+      if (hasSingle && !hasSetType) {
+        hasSetType = true;
+        currentTsConfig = tsConfig(absolutePath, "process.env", "type");
+      }
       allOptions.singleOther = {
         ...options,
         output: singleOther,
@@ -260,12 +261,17 @@ const transformSingleBuildConfig = (
                   preventAssignment: true,
                 }
           ),
-          tsConfig(absolutePath, "process.env"),
+          currentTsConfig,
         ],
       };
     }
 
     if (singleUMD.length) {
+      let currentTsConfig = tsConfig(absolutePath, "process.env");
+      if (hasSingle && !hasSetType) {
+        hasSetType = true;
+        currentTsConfig = tsConfig(absolutePath, "process.env", "type");
+      }
       allOptions.singleUMD = {
         ...options,
         output: singleUMD,
@@ -284,7 +290,7 @@ const transformSingleBuildConfig = (
                   preventAssignment: true,
                 }
           ),
-          tsConfig(absolutePath, "process.env"),
+          currentTsConfig,
         ],
       };
     }
@@ -310,15 +316,17 @@ const flattenRollupConfig = (
     throw new Error(`current package "${packageName}" not have a output config`);
   }
 
-  const allMultipleRollupOptions = modes.map((mode) => transformMultipleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode, options));
+  const hasSingle = (Array.isArray(rollupConfig.output) ? rollupConfig.output : [rollupConfig.output]).some((i: MultipleOutput) => !i.multiple);
 
-  const allSingleRollupOptions = transformSingleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, options);
+  const allMultipleRollupOptions = modes.map((mode) =>
+    transformMultipleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode, options, hasSingle)
+  );
+
+  const allSingleRollupOptions = transformSingleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, options, hasSingle);
 
   const allDevBuild = allMultipleRollupOptions[0];
 
   const allProdBuild = allMultipleRollupOptions[1];
-
-  const type = allSingleRollupOptions["type"];
 
   const singleOther = allSingleRollupOptions["singleOther"];
 
@@ -333,7 +341,6 @@ const flattenRollupConfig = (
   const multipleProdUMD = allProdBuild["multipleUMD"];
 
   return {
-    type,
     singleOther,
     singleDevUMD,
     multipleDevOther,
@@ -390,7 +397,6 @@ export const getRollupConfigs = async (options: Options) => {
   const all = rollupConfig.map((config) => flattenRollupConfig(config, packageName, packageFileObject, absolutePath, options));
 
   return {
-    type: all.map((i) => i.type).filter(filterFun),
     singleOther: all.map((i) => i.singleOther).filter(filterFun),
     singleDevUMD: all.map((i) => i.singleDevUMD).filter(filterFun),
     multipleDevOther: all.map((i) => i.multipleDevOther).filter(filterFun),

@@ -133,7 +133,7 @@ var tsConfig = function (absolutePath, mode, type) {
         tsconfigOverride: {
             compilerOptions: {
                 composite: type === "type" ? true : false,
-                sourceMap: (mode === "process.env" || mode === "development") && type !== "type" ? true : false,
+                sourceMap: mode === "process.env" || mode === "development" ? true : false,
                 declaration: type === "type" ? true : false,
                 declarationMap: type === "type" ? true : false,
                 declarationDir: type === "type" ? "dist/types" : null,
@@ -142,9 +142,10 @@ var tsConfig = function (absolutePath, mode, type) {
         },
     });
 };
-var transformMultipleBuildConfig = function (options, packageFileObject, absolutePath, mode, configOption) {
-    var _a;
+var transformMultipleBuildConfig = function (options, packageFileObject, absolutePath, mode, configOption, hasSingle) {
+    var _a, _b;
     var allOptions = {};
+    var hasSetType = false;
     if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
         options.input = path.resolve(absolutePath, options.input);
     }
@@ -193,24 +194,12 @@ var transformMultipleBuildConfig = function (options, packageFileObject, absolut
             }
         };
         if (multipleOtherConfig.length) {
+            var currentTsConfig = tsConfig(absolutePath, mode);
+            if (!hasSingle && mode === "development" && !hasSetType) {
+                hasSetType = true;
+                currentTsConfig = tsConfig(absolutePath, mode, "type");
+            }
             allOptions.multipleOther = __assign(__assign({}, options), { output: multipleOtherConfig, external: configOption.external || (function (id) { return id.includes("node_modules"); }), plugins: [
-                    pluginNodeResolve.nodeResolve(),
-                    commonjs({ exclude: "node_modules" }),
-                    replace(packageFileObject["name"] === "@project-tool/rollup"
-                        ? {}
-                        : {
-                            __DEV__: mode === "development",
-                            __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                            preventAssignment: true,
-                        }),
-                    tsConfig(absolutePath, mode),
-                ] });
-        }
-        if (multipleUMDConfig.length) {
-            allOptions.multipleUMD = __assign(__assign({}, options), { output: multipleUMDConfig, external: function (id) {
-                    if (umdGlobalIgnore_1.some(function (name) { return id.endsWith(name); }))
-                        return true;
-                }, plugins: [
                     pluginNodeResolve.nodeResolve(),
                     commonjs({ exclude: "node_modules" }),
                     replace(packageFileObject["name"] === "@project-tool/rollup"
@@ -222,15 +211,40 @@ var transformMultipleBuildConfig = function (options, packageFileObject, absolut
                             _a.__VERSION__ = JSON.stringify(packageFileObject["version"] || "0.0.1"),
                             _a.preventAssignment = true,
                             _a)),
-                    tsConfig(absolutePath, mode),
+                    currentTsConfig,
+                ] });
+        }
+        if (multipleUMDConfig.length) {
+            var currentTsConfig = tsConfig(absolutePath, mode);
+            if (!hasSingle && mode === "development" && !hasSetType) {
+                hasSetType = true;
+                currentTsConfig = tsConfig(absolutePath, mode, "type");
+            }
+            allOptions.multipleUMD = __assign(__assign({}, options), { output: multipleUMDConfig, external: function (id) {
+                    if (umdGlobalIgnore_1.some(function (name) { return id.endsWith(name); }))
+                        return true;
+                }, plugins: [
+                    pluginNodeResolve.nodeResolve(),
+                    commonjs({ exclude: "node_modules" }),
+                    replace(packageFileObject["name"] === "@project-tool/rollup"
+                        ? {}
+                        : (_b = {
+                                __DEV__: mode === "development"
+                            },
+                            _b["process.env.NODE_ENV"] = JSON.stringify(mode),
+                            _b.__VERSION__ = JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                            _b.preventAssignment = true,
+                            _b)),
+                    currentTsConfig,
                     mode === "production" ? terser() : null,
                 ] });
         }
     }
     return allOptions;
 };
-var transformSingleBuildConfig = function (options, packageFileObject, absolutePath, configOption) {
+var transformSingleBuildConfig = function (options, packageFileObject, absolutePath, configOption, hasSingle) {
     var allOptions = {};
+    var hasSetType = false;
     if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
         options.input = path.resolve(absolutePath, options.input);
     }
@@ -260,19 +274,12 @@ var transformSingleBuildConfig = function (options, packageFileObject, absoluteP
                 warn(msg);
             }
         };
-        allOptions.type = __assign(__assign({}, options), { output: singleOther, external: configOption.external || (function (id) { return id.includes("node_modules"); }), plugins: [
-                pluginNodeResolve.nodeResolve(),
-                commonjs({ exclude: "node_modules" }),
-                replace(packageFileObject["name"] === "@project-tool/rollup"
-                    ? {}
-                    : {
-                        __DEV__: 'process.env.NODE_ENV === "development"',
-                        __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                        preventAssignment: true,
-                    }),
-                tsConfig(absolutePath, "process.env", "type"),
-            ] });
         if (singleOther.length) {
+            var currentTsConfig = tsConfig(absolutePath, "process.env");
+            if (hasSingle && !hasSetType) {
+                hasSetType = true;
+                currentTsConfig = tsConfig(absolutePath, "process.env", "type");
+            }
             allOptions.singleOther = __assign(__assign({}, options), { output: singleOther, external: configOption.external || (function (id) { return id.includes("node_modules"); }), plugins: [
                     pluginNodeResolve.nodeResolve(),
                     commonjs({ exclude: "node_modules" }),
@@ -283,10 +290,15 @@ var transformSingleBuildConfig = function (options, packageFileObject, absoluteP
                             __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
                             preventAssignment: true,
                         }),
-                    tsConfig(absolutePath, "process.env"),
+                    currentTsConfig,
                 ] });
         }
         if (singleUMD.length) {
+            var currentTsConfig = tsConfig(absolutePath, "process.env");
+            if (hasSingle && !hasSetType) {
+                hasSetType = true;
+                currentTsConfig = tsConfig(absolutePath, "process.env", "type");
+            }
             allOptions.singleUMD = __assign(__assign({}, options), { output: singleUMD, external: function (id) {
                     if (umdGlobalIgnore_2.some(function (name) { return id.endsWith(name); }))
                         return true;
@@ -300,7 +312,7 @@ var transformSingleBuildConfig = function (options, packageFileObject, absoluteP
                             __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
                             preventAssignment: true,
                         }),
-                    tsConfig(absolutePath, "process.env"),
+                    currentTsConfig,
                 ] });
         }
     }
@@ -314,11 +326,13 @@ var flattenRollupConfig = function (rollupConfig, packageName, packageFileObject
     if (!rollupConfig.output) {
         throw new Error("current package \"".concat(packageName, "\" not have a output config"));
     }
-    var allMultipleRollupOptions = modes.map(function (mode) { return transformMultipleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode, options); });
-    var allSingleRollupOptions = transformSingleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, options);
+    var hasSingle = (Array.isArray(rollupConfig.output) ? rollupConfig.output : [rollupConfig.output]).some(function (i) { return !i.multiple; });
+    var allMultipleRollupOptions = modes.map(function (mode) {
+        return transformMultipleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode, options, hasSingle);
+    });
+    var allSingleRollupOptions = transformSingleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, options, hasSingle);
     var allDevBuild = allMultipleRollupOptions[0];
     var allProdBuild = allMultipleRollupOptions[1];
-    var type = allSingleRollupOptions["type"];
     var singleOther = allSingleRollupOptions["singleOther"];
     var singleDevUMD = allSingleRollupOptions["singleUMD"];
     var multipleDevOther = allDevBuild["multipleOther"];
@@ -326,7 +340,6 @@ var flattenRollupConfig = function (rollupConfig, packageName, packageFileObject
     var multipleProdOther = allProdBuild["multipleOther"];
     var multipleProdUMD = allProdBuild["multipleUMD"];
     return {
-        type: type,
         singleOther: singleOther,
         singleDevUMD: singleDevUMD,
         multipleDevOther: multipleDevOther,
@@ -375,7 +388,6 @@ var getRollupConfigs = function (options) { return __awaiter(void 0, void 0, voi
                 }
                 all = rollupConfig.map(function (config) { return flattenRollupConfig(config, packageName, packageFileObject, absolutePath, options); });
                 return [2 /*return*/, {
-                        type: all.map(function (i) { return i.type; }).filter(filterFun),
                         singleOther: all.map(function (i) { return i.singleOther; }).filter(filterFun),
                         singleDevUMD: all.map(function (i) { return i.singleDevUMD; }).filter(filterFun),
                         multipleDevOther: all.map(function (i) { return i.multipleDevOther; }).filter(filterFun),
@@ -396,32 +408,38 @@ var build = function (packageName, rollupOptions, mode, type) { return __awaiter
                 bundle = null;
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 4, 5, 7]);
+                _a.trys.push([1, 7, 8, 10]);
                 output = rollupOptions.output, options = __rest(rollupOptions, ["output"]);
                 return [4 /*yield*/, rollup.rollup(options)];
             case 2:
                 bundle = _a.sent();
+                if (!Array.isArray(output)) return [3 /*break*/, 4];
                 return [4 /*yield*/, Promise.all(output.map(function (output) { return bundle === null || bundle === void 0 ? void 0 : bundle.write(output); }))];
             case 3:
                 _a.sent();
-                return [3 /*break*/, 7];
-            case 4:
+                return [3 /*break*/, 6];
+            case 4: return [4 /*yield*/, (bundle === null || bundle === void 0 ? void 0 : bundle.write(output))];
+            case 5:
+                _a.sent();
+                _a.label = 6;
+            case 6: return [3 /*break*/, 10];
+            case 7:
                 e_1 = _a.sent();
                 logger().error("[build] build package '".concat(packageName, "' with '").concat(mode, "' mode in '").concat(type, "' format failed \n ").concat(e_1.message));
                 process.exit(1);
-                return [3 /*break*/, 7];
-            case 5: return [4 /*yield*/, (bundle === null || bundle === void 0 ? void 0 : bundle.close())];
-            case 6:
+                return [3 /*break*/, 10];
+            case 8: return [4 /*yield*/, (bundle === null || bundle === void 0 ? void 0 : bundle.close())];
+            case 9:
                 _a.sent();
                 return [7 /*endfinally*/];
-            case 7:
+            case 10:
                 logger().info("[build] build package '".concat(packageName, "' with '").concat(mode, "' mode in '").concat(type, "' format success"));
                 return [2 /*return*/];
         }
     });
 }); };
 var rollupBuild = function (options) { return __awaiter(void 0, void 0, void 0, function () {
-    var aliasName, _a, singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, multipleProdOther, multipleProdUMD, type, all_1, e_2;
+    var aliasName, _a, singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, multipleProdOther, multipleProdUMD, all_1, e_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -431,14 +449,8 @@ var rollupBuild = function (options) { return __awaiter(void 0, void 0, void 0, 
                 _b.trys.push([1, 4, , 5]);
                 return [4 /*yield*/, getRollupConfigs(options)];
             case 2:
-                _a = _b.sent(), singleOther = _a.singleOther, singleDevUMD = _a.singleDevUMD, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD, multipleProdOther = _a.multipleProdOther, multipleProdUMD = _a.multipleProdUMD, type = _a.type;
+                _a = _b.sent(), singleOther = _a.singleOther, singleDevUMD = _a.singleDevUMD, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD, multipleProdOther = _a.multipleProdOther, multipleProdUMD = _a.multipleProdUMD;
                 all_1 = [];
-                type.map(function (config) {
-                    var pkgName = config.pkgName;
-                    var name = pkgName ? aliasName + "/" + pkgName : aliasName;
-                    delete config.pkgName;
-                    all_1.push(function () { return build(name, config, "type", "type"); });
-                });
                 singleOther.map(function (config) {
                     var pkgName = config.pkgName;
                     var name = pkgName ? aliasName + "/" + pkgName : aliasName;

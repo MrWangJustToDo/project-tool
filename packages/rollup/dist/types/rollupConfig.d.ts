@@ -1,6 +1,5 @@
 import type { Options, RollupOptions } from "./type";
 export declare const getRollupConfigs: (options: Options) => Promise<{
-    type: RollupOptions[];
     singleOther: RollupOptions[];
     singleDevUMD: RollupOptions[];
     multipleDevOther: RollupOptions[];
