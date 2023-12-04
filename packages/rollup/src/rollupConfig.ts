@@ -1,12 +1,13 @@
 import commonjs from "@rollup/plugin-commonjs";
+import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import terser from "@rollup/plugin-terser";
+import typescript from "@rollup/plugin-typescript";
 import fs from "fs";
 import { readFile, access } from "fs/promises";
 import cloneDeep from "lodash/cloneDeep";
 import { resolve } from "path";
-import typescript from "rollup-plugin-typescript2";
 
 import { safeParse } from "./safeParse";
 
@@ -38,19 +39,12 @@ const checkFileExist = (path: string) => {
 
 const tsConfig = (absolutePath: string, mode: Mode, type?: "type") => {
   return typescript({
-    clean: true,
+    cacheDir: resolve(absolutePath, ".cache"),
     tsconfig: resolve(absolutePath, "tsconfig.json"),
-    useTsconfigDeclarationDir: type === "type" ? true : false,
-    tsconfigOverride: {
-      compilerOptions: {
-        composite: type === "type" ? true : false,
-        sourceMap: mode === "process.env" || mode === "development" ? true : false,
-        declaration: type === "type" ? true : false,
-        declarationMap: type === "type" ? true : false,
-        declarationDir: type === "type" ? "dist/types" : null,
-        noEmit: type === "type",
-      },
-    },
+    sourceMap: true,
+    declaration: type === "type" ? true : false,
+    declarationMap: type === "type" ? true : false,
+    declarationDir: type === "type" ? resolve(absolutePath, "dist/types") : null,
   });
 };
 
@@ -132,7 +126,7 @@ const transformMultipleBuildConfig = (
       allOptions.multipleOther = {
         ...options,
         output: multipleOtherConfig,
-        external: configOption.external || ((id) => id.includes("node_modules")),
+        external: configOption.external || ((id) => id.includes("node_modules") && !id.includes("tslib")),
         plugins: [
           nodeResolve(),
           commonjs({ exclude: "node_modules" }),
@@ -147,6 +141,7 @@ const transformMultipleBuildConfig = (
                 }
           ),
           currentTsConfig,
+          json(),
         ],
       };
     }
@@ -177,6 +172,7 @@ const transformMultipleBuildConfig = (
                 }
           ),
           currentTsConfig,
+          json(),
           mode === "production" ? terser() : null,
         ],
       };
@@ -248,7 +244,7 @@ const transformSingleBuildConfig = (
       allOptions.singleOther = {
         ...options,
         output: singleOther,
-        external: configOption.external || ((id) => id.includes("node_modules")),
+        external: configOption.external || ((id) => id.includes("node_modules") && !id.includes("tslib")),
         plugins: [
           nodeResolve(),
           commonjs({ exclude: "node_modules" }),
@@ -262,6 +258,7 @@ const transformSingleBuildConfig = (
                 }
           ),
           currentTsConfig,
+          json(),
         ],
       };
     }
@@ -291,6 +288,7 @@ const transformSingleBuildConfig = (
                 }
           ),
           currentTsConfig,
+          json(),
         ],
       };
     }

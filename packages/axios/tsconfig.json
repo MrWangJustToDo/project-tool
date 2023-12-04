@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
-    "rootDir": "src",
     "target": "ES5"
   },
-  "include": ["./src", "env.d.ts"],
+  "include": ["src", "env.d.ts"],
   "exclude": ["node_modules"]
 }
