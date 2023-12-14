@@ -1440,7 +1440,7 @@ var watch = function (packageName, rollupOptions, mode, type) {
     });
 };
 var rollupWatch = function (options) { return __awaiter(void 0, void 0, void 0, function () {
-    var aliasName, _a, singleOther, multipleDevOther, multipleDevUMD, e_1;
+    var aliasName, _a, singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, umdBuild, e_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -1450,7 +1450,8 @@ var rollupWatch = function (options) { return __awaiter(void 0, void 0, void 0, 
                 _b.trys.push([1, 3, , 4]);
                 return [4 /*yield*/, getRollupConfigs(options)];
             case 2:
-                _a = _b.sent(), singleOther = _a.singleOther, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD;
+                _a = _b.sent(), singleOther = _a.singleOther, singleDevUMD = _a.singleDevUMD, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD;
+                umdBuild = singleDevUMD.length ? singleDevUMD : multipleDevUMD;
                 singleOther.forEach(function (config) {
                     var pkgName = config.pkgName;
                     var name = pkgName ? aliasName + "/" + pkgName : aliasName;
@@ -1463,7 +1464,7 @@ var rollupWatch = function (options) { return __awaiter(void 0, void 0, void 0, 
                     delete config.pkgName;
                     watch(name, config, "development", uniq(config.output.map(function (v) { return v.format; })).join("&"));
                 });
-                multipleDevUMD.forEach(function (config) {
+                umdBuild.forEach(function (config) {
                     var pkgName = config.pkgName;
                     var name = pkgName ? aliasName + "/" + pkgName : aliasName;
                     delete config.pkgName;
