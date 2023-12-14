@@ -53,9 +53,9 @@ var baseLint = {
 var reactLint = {
     parser: "@typescript-eslint/parser",
     extends: [
-        "plugin:react/recommended",
-        "plugin:react-hooks/recommended",
-        "plugin:jsx-a11y/recommended",
+        "plugin:react/recommended", // React rules
+        "plugin:react-hooks/recommended", // React hooks rules
+        "plugin:jsx-a11y/recommended", // Accessibility rules
         "plugin:react/jsx-runtime", // new JSX runtime for react
     ],
     parserOptions: {

@@ -31,7 +31,7 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
-/* global Reflect, Promise */
+/* global Reflect, Promise, SuppressedError, Symbol */
 
 
 var __assign = function() {
@@ -94,6 +94,11 @@ function __generator(thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 }
+
+typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    var e = new Error(message);
+    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+};
 
 var logger = function () { return pino(pretty()); };
 
@@ -1414,7 +1419,7 @@ var watch = function (packageName, rollupOptions, mode, type) {
     });
 };
 var rollupWatch = function (options) { return __awaiter(void 0, void 0, void 0, function () {
-    var aliasName, _a, singleOther, multipleDevOther, multipleDevUMD, e_1;
+    var aliasName, _a, singleOther, singleDevUMD, multipleDevOther, multipleDevUMD, umdBuild, e_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -1424,7 +1429,8 @@ var rollupWatch = function (options) { return __awaiter(void 0, void 0, void 0, 
                 _b.trys.push([1, 3, , 4]);
                 return [4 /*yield*/, getRollupConfigs(options)];
             case 2:
-                _a = _b.sent(), singleOther = _a.singleOther, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD;
+                _a = _b.sent(), singleOther = _a.singleOther, singleDevUMD = _a.singleDevUMD, multipleDevOther = _a.multipleDevOther, multipleDevUMD = _a.multipleDevUMD;
+                umdBuild = singleDevUMD.length ? singleDevUMD : multipleDevUMD;
                 singleOther.forEach(function (config) {
                     var pkgName = config.pkgName;
                     var name = pkgName ? aliasName + "/" + pkgName : aliasName;
@@ -1437,7 +1443,7 @@ var rollupWatch = function (options) { return __awaiter(void 0, void 0, void 0, 
                     delete config.pkgName;
                     watch(name, config, "development", uniq(config.output.map(function (v) { return v.format; })).join("&"));
                 });
-                multipleDevUMD.forEach(function (config) {
+                umdBuild.forEach(function (config) {
                     var pkgName = config.pkgName;
                     var name = pkgName ? aliasName + "/" + pkgName : aliasName;
                     delete config.pkgName;

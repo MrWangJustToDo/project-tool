@@ -37,7 +37,9 @@ export const rollupWatch = async (options: Options) => {
   const aliasName = options.alias || options.packageName;
 
   try {
-    const { singleOther, multipleDevOther, multipleDevUMD } = await getRollupConfigs(options);
+    const { singleOther, singleDevUMD, multipleDevOther, multipleDevUMD } = await getRollupConfigs(options);
+
+    const umdBuild = singleDevUMD.length ? singleDevUMD : multipleDevUMD;
 
     singleOther.forEach((config) => {
       const pkgName = config.pkgName;
@@ -53,7 +55,7 @@ export const rollupWatch = async (options: Options) => {
       watch(name, config as RollupOptions, "development", uniq((config.output as OutputOptions[]).map((v) => v.format)).join("&"));
     });
 
-    multipleDevUMD.forEach((config) => {
+    umdBuild.forEach((config) => {
       const pkgName = config.pkgName;
       const name = pkgName ? aliasName + "/" + pkgName : aliasName;
       delete config.pkgName;
