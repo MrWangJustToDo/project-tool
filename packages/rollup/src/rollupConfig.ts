@@ -11,7 +11,7 @@ import { resolve } from "path";
 
 import { safeParse } from "./safeParse";
 
-import type { Mode, MultipleOutput, Options, RollupOptions } from "./type";
+import type { Mode, CustomOutput, Options, RollupOptions } from "./type";
 
 const defaultBuildOptions: RollupOptions = {
   input: "./src/index.ts",
@@ -53,8 +53,7 @@ const transformMultipleBuildConfig = (
   packageFileObject: Record<string, any>,
   absolutePath: string,
   mode: Mode,
-  configOption: Options,
-  hasSingle: boolean
+  configOption: Options
 ): {
   multipleOther?: RollupOptions;
   multipleUMD?: RollupOptions;
@@ -64,18 +63,16 @@ const transformMultipleBuildConfig = (
     multipleUMD?: RollupOptions;
   } = {};
 
-  let hasSetType = false;
-
   if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
     options.input = resolve(absolutePath, options.input);
   }
   if (options.output) {
     options.output = Array.isArray(options.output) ? options.output : [options.output];
-    const multipleOutput = options.output.filter((output: MultipleOutput) => output.multiple);
+    const CustomOutput = options.output.filter((output: CustomOutput) => output.multiple);
 
     const umdGlobalIgnore: string[] = [];
 
-    options.output = multipleOutput.map((output: MultipleOutput) => {
+    options.output = CustomOutput.map((output: CustomOutput) => {
       if (output.dir && !output.dir.startsWith(absolutePath)) {
         output.dir = resolve(absolutePath, output.dir);
         if (configOption.multipleNameTransform) {
@@ -101,8 +98,8 @@ const transformMultipleBuildConfig = (
       return output;
     });
 
-    const multipleOtherConfig = options.output.filter((output) => output.format !== "umd");
-    const multipleUMDConfig = options.output.filter((output) => output.format === "umd");
+    const multipleOtherConfig = options.output.filter((output) => output.format !== "umd") as CustomOutput[];
+    const multipleUMDConfig = options.output.filter((output) => output.format === "umd") as CustomOutput[];
 
     multipleUMDConfig.forEach((output) => {
       if (output.globals) {
@@ -119,62 +116,113 @@ const transformMultipleBuildConfig = (
 
     if (multipleOtherConfig.length) {
       let currentTsConfig = tsConfig(absolutePath, mode);
-      if (!hasSingle && mode === "development" && !hasSetType) {
-        hasSetType = true;
+      if (mode === "development" && multipleOtherConfig.some((config) => config.type)) {
         currentTsConfig = tsConfig(absolutePath, mode, "type");
       }
+
+      multipleOtherConfig.forEach((config) => delete config.type);
+
+      const pluginsBuilder = mode === "development" ? configOption.plugins?.multipleDevOther : configOption.plugins?.multipleProdOther;
+      const defaultPlugins = [
+        nodeResolve(),
+        commonjs({ exclude: "node_modules" }),
+        replace(
+          packageFileObject["name"] === "@project-tool/rollup"
+            ? {}
+            : {
+                __DEV__: mode === "development",
+                ["process.env.NODE_ENV"]: JSON.stringify(mode),
+                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                preventAssignment: true,
+              }
+        ),
+        currentTsConfig,
+        json(),
+      ];
+      const plugins = pluginsBuilder
+        ? pluginsBuilder({
+            defaultPlugins,
+            defaultPluginIndex: {
+              nodeResolve: 0,
+              commonjs: 1,
+              replace: 2,
+              typescript: 3,
+              json: 4,
+            },
+            defaultPluginPackages: { commonjs, typescript, json, replace, terser, nodeResolve },
+            defaultPluginProps: {
+              options,
+              packageFileObject,
+              absolutePath,
+              mode,
+              configOption,
+            },
+          })
+        : defaultPlugins;
       allOptions.multipleOther = {
         ...options,
         output: multipleOtherConfig,
         external: configOption.external || ((id) => id.includes("node_modules") && !id.includes("tslib")),
-        plugins: [
-          nodeResolve(),
-          commonjs({ exclude: "node_modules" }),
-          replace(
-            packageFileObject["name"] === "@project-tool/rollup"
-              ? {}
-              : {
-                  __DEV__: mode === "development",
-                  ["process.env.NODE_ENV"]: JSON.stringify(mode),
-                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                  preventAssignment: true,
-                }
-          ),
-          currentTsConfig,
-          json(),
-        ],
+        plugins: plugins,
       };
     }
 
     if (multipleUMDConfig.length) {
       let currentTsConfig = tsConfig(absolutePath, mode);
-      if (!hasSingle && mode === "development" && !hasSetType) {
-        hasSetType = true;
+
+      if (mode === "development" && multipleUMDConfig.some((config) => config.type)) {
         currentTsConfig = tsConfig(absolutePath, mode, "type");
       }
+
+      multipleUMDConfig.forEach((config) => delete config.type);
+
+      const pluginsBuilder = mode === "development" ? configOption.plugins?.multipleDevUMD : configOption.plugins?.multipleProdUMD;
+      const defaultPlugins = [
+        nodeResolve(),
+        commonjs({ exclude: "node_modules" }),
+        replace(
+          packageFileObject["name"] === "@project-tool/rollup"
+            ? {}
+            : {
+                __DEV__: mode === "development",
+                ["process.env.NODE_ENV"]: JSON.stringify(mode),
+                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                preventAssignment: true,
+              }
+        ),
+        currentTsConfig,
+        json(),
+        mode === "production" ? terser() : null,
+      ];
+      const plugins = pluginsBuilder
+        ? pluginsBuilder({
+            defaultPlugins,
+            defaultPluginIndex: {
+              nodeResolve: 0,
+              commonjs: 1,
+              replace: 2,
+              typescript: 3,
+              json: 4,
+              terser: 5,
+            },
+            defaultPluginPackages: { commonjs, typescript, json, replace, terser, nodeResolve },
+            defaultPluginProps: {
+              options,
+              packageFileObject,
+              absolutePath,
+              mode,
+              configOption,
+            },
+          })
+        : defaultPlugins;
+
       allOptions.multipleUMD = {
         ...options,
         output: multipleUMDConfig,
         external: (id) => {
           if (umdGlobalIgnore.some((name) => id.endsWith(name))) return true;
         },
-        plugins: [
-          nodeResolve(),
-          commonjs({ exclude: "node_modules" }),
-          replace(
-            packageFileObject["name"] === "@project-tool/rollup"
-              ? {}
-              : {
-                  __DEV__: mode === "development",
-                  ["process.env.NODE_ENV"]: JSON.stringify(mode),
-                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                  preventAssignment: true,
-                }
-          ),
-          currentTsConfig,
-          json(),
-          mode === "production" ? terser() : null,
-        ],
+        plugins: plugins,
       };
     }
   }
@@ -186,8 +234,7 @@ const transformSingleBuildConfig = (
   options: RollupOptions,
   packageFileObject: Record<string, any>,
   absolutePath: string,
-  configOption: Options,
-  hasSingle: boolean
+  configOption: Options
 ): {
   singleOther?: RollupOptions;
   singleUMD?: RollupOptions;
@@ -197,15 +244,13 @@ const transformSingleBuildConfig = (
     singleUMD?: RollupOptions;
   } = {};
 
-  let hasSetType = false;
-
   if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
     options.input = resolve(absolutePath, options.input);
   }
 
   if (options.output) {
     options.output = Array.isArray(options.output) ? options.output : [options.output];
-    const singleOutput = options.output.filter((output: MultipleOutput) => !output.multiple);
+    const singleOutput = options.output.filter((output: CustomOutput) => !output.multiple);
 
     const umdGlobalIgnore: string[] = [];
 
@@ -219,8 +264,8 @@ const transformSingleBuildConfig = (
       return output;
     });
 
-    const singleOther = options.output.filter((output) => output.format !== "umd");
-    const singleUMD = options.output.filter((output) => output.format === "umd");
+    const singleOther = options.output.filter((output) => output.format !== "umd") as CustomOutput[];
+    const singleUMD = options.output.filter((output) => output.format === "umd") as CustomOutput[];
 
     singleUMD.forEach((output) => {
       if (output.globals) {
@@ -237,59 +282,107 @@ const transformSingleBuildConfig = (
 
     if (singleOther.length) {
       let currentTsConfig = tsConfig(absolutePath, "process.env");
-      if (hasSingle && !hasSetType) {
-        hasSetType = true;
+      if (singleOther.some((config) => config.type)) {
         currentTsConfig = tsConfig(absolutePath, "process.env", "type");
       }
+
+      singleOther.forEach((config) => delete config.type);
+
+      const pluginsBuilder = configOption.plugins?.singleOther;
+      const defaultPlugins = [
+        nodeResolve(),
+        commonjs({ exclude: "node_modules" }),
+        replace(
+          packageFileObject["name"] === "@project-tool/rollup"
+            ? {}
+            : {
+                __DEV__: 'process.env.NODE_ENV === "development"',
+                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                preventAssignment: true,
+              }
+        ),
+        currentTsConfig,
+        json(),
+      ];
+      const plugins = pluginsBuilder
+        ? pluginsBuilder({
+            defaultPlugins,
+            defaultPluginIndex: {
+              nodeResolve: 0,
+              commonjs: 1,
+              replace: 2,
+              typescript: 3,
+              json: 4,
+            },
+            defaultPluginPackages: { commonjs, typescript, json, replace, terser, nodeResolve },
+            defaultPluginProps: {
+              options,
+              packageFileObject,
+              absolutePath,
+              mode: "process.env",
+              configOption,
+            },
+          })
+        : defaultPlugins;
+
       allOptions.singleOther = {
         ...options,
         output: singleOther,
         external: configOption.external || ((id) => id.includes("node_modules") && !id.includes("tslib")),
-        plugins: [
-          nodeResolve(),
-          commonjs({ exclude: "node_modules" }),
-          replace(
-            packageFileObject["name"] === "@project-tool/rollup"
-              ? {}
-              : {
-                  __DEV__: 'process.env.NODE_ENV === "development"',
-                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                  preventAssignment: true,
-                }
-          ),
-          currentTsConfig,
-          json(),
-        ],
+        plugins: plugins,
       };
     }
 
     if (singleUMD.length) {
       let currentTsConfig = tsConfig(absolutePath, "process.env");
-      if (hasSingle && !hasSetType) {
-        hasSetType = true;
+      if (singleUMD.some((config) => config.type)) {
         currentTsConfig = tsConfig(absolutePath, "process.env", "type");
       }
+
+      const pluginsBuilder = configOption.plugins?.singleDevUMD;
+      const defaultPlugins = [
+        nodeResolve(),
+        commonjs({ exclude: "node_modules" }),
+        replace(
+          packageFileObject["name"] === "@project-tool/rollup"
+            ? {}
+            : {
+                __DEV__: JSON.stringify(true),
+                __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
+                preventAssignment: true,
+              }
+        ),
+        currentTsConfig,
+        json(),
+      ];
+      const plugins = pluginsBuilder
+        ? pluginsBuilder({
+            defaultPlugins,
+            defaultPluginIndex: {
+              nodeResolve: 0,
+              commonjs: 1,
+              replace: 2,
+              typescript: 3,
+              json: 4,
+            },
+            defaultPluginPackages: { commonjs, typescript, json, replace, terser, nodeResolve },
+            defaultPluginProps: {
+              options,
+              packageFileObject,
+              absolutePath,
+              mode: "process.env",
+              configOption,
+            },
+          })
+        : defaultPlugins;
+
       allOptions.singleUMD = {
         ...options,
         output: singleUMD,
         external: (id) => {
           if (umdGlobalIgnore.some((name) => id.endsWith(name))) return true;
         },
-        plugins: [
-          nodeResolve(),
-          commonjs({ exclude: "node_modules" }),
-          replace(
-            packageFileObject["name"] === "@project-tool/rollup"
-              ? {}
-              : {
-                  __DEV__: JSON.stringify(true),
-                  __VERSION__: JSON.stringify(packageFileObject["version"] || "0.0.1"),
-                  preventAssignment: true,
-                }
-          ),
-          currentTsConfig,
-          json(),
-        ],
+        plugins: plugins,
       };
     }
   }
@@ -314,13 +407,9 @@ const flattenRollupConfig = (
     throw new Error(`current package "${packageName}" not have a output config`);
   }
 
-  const hasSingle = (Array.isArray(rollupConfig.output) ? rollupConfig.output : [rollupConfig.output]).some((i: MultipleOutput) => !i.multiple);
+  const allMultipleRollupOptions = modes.map((mode) => transformMultipleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode, options));
 
-  const allMultipleRollupOptions = modes.map((mode) =>
-    transformMultipleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, mode, options, hasSingle)
-  );
-
-  const allSingleRollupOptions = transformSingleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, options, hasSingle);
+  const allSingleRollupOptions = transformSingleBuildConfig(cloneDeep(rollupConfig), packageFileObject, absolutePath, options);
 
   const allDevBuild = allMultipleRollupOptions[0];
 

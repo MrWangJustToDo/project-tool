@@ -1,5 +1,5 @@
 {
-  "version": "0.2.6",
+  "version": "0.2.7",
   "license": "MIT",
   "name": "project-tool",
   "description": "a tool project to help build other project",
@@ -64,7 +64,7 @@
     "pino": "^8.15.0",
     "pino-pretty": "^10.2.0",
     "postcss": "^8.4.33",
-    "prettier": "^3.1.1",
+    "prettier": "^3.2.4",
     "rollup": "^4.9.5",
     "stylelint": "^16.1.0",
     "stylelint-config-standard": "^36.0.0",
@@ -81,7 +81,7 @@
     "@project-tool/stylelint": "workspace: *",
     "@types/eslint": "^8.56.2",
     "@types/lodash": "^4.14.202",
-    "@types/node": "^20.11.0",
+    "@types/node": "^20.11.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
