@@ -10,7 +10,7 @@ export const generateFetchWithTimeout = (timeout?: number) => {
           setTimeout(() => {
             reject(new FetchTimeOutError(`${timeout} ms timeout to fetch`));
           }, timeout);
-        }),
+        })
       );
     }
 

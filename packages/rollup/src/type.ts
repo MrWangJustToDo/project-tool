@@ -44,7 +44,7 @@ type ExternalPlugins = ({
     replace?: number;
     terser?: number;
     typescript?: number;
-  }
+  };
   defaultPluginPackages: {
     commonjs: typeof commonjs;
     json: typeof json;
