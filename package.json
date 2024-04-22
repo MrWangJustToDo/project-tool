@@ -30,7 +30,7 @@
     "./reactLint": "./reactLint.js",
     "./styleLint": "./styleLint.js"
   },
-  "packageManager": "pnpm@9.0.5",
+  "packageManager": "pnpm@8.9.0",
   "scripts": {
     "build:packages": "ts-node ./build.ts",
     "dev:packages": "ts-node ./watch.ts",
