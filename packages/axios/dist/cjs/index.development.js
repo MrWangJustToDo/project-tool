@@ -303,7 +303,7 @@ var serverLog = function (error) {
     if (__SERVER__ || true) {
         if (error instanceof axios.AxiosError) {
             var config = error.config, status_1 = error.status;
-            console.error("[axios]: request error, url: ".concat(config === null || config === void 0 ? void 0 : config.baseURL).concat(config === null || config === void 0 ? void 0 : config.url, ", statusCode: ").concat(status_1, ", error: ").concat(error.message));
+            console.error("[axios]: request error, url: ".concat((config === null || config === void 0 ? void 0 : config.baseURL) || "").concat((config === null || config === void 0 ? void 0 : config.url) || "", ", statusCode: ").concat(status_1, ", error: ").concat(error.message));
         }
         else if (error instanceof Error) {
             console.error("[axios]: request error, message: ".concat(error.message));
