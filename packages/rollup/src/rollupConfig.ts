@@ -11,7 +11,8 @@ import { resolve } from "path";
 
 import { safeParse } from "./safeParse";
 
-import type { Mode, CustomOutput, Options, RollupOptions } from "./type";
+import type { Mode, CustomOutput, Options, RollupOptions, CustomExternalOptions } from "./type";
+import type { ExternalOption } from "rollup";
 
 const defaultBuildOptions: RollupOptions = {
   input: "./src/index.ts",
@@ -162,7 +163,12 @@ const transformMultipleBuildConfig = (
       allOptions.multipleOther = {
         ...options,
         output: multipleOtherConfig,
-        external: configOption.external || ((id) => id.includes("node_modules") && !id.includes("tslib")),
+        external:
+          (typeof (configOption.external as CustomExternalOptions)?.generateExternal === "function"
+            ? // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              (configOption.external as CustomExternalOptions)?.generateExternal(mode === "development" ? "multipleDevOther" : "multipleProdOther")
+            : (configOption.external as ExternalOption)) || ((id) => id.includes("node_modules") && !id.includes("tslib")),
         plugins: plugins,
       };
     }
@@ -328,7 +334,12 @@ const transformSingleBuildConfig = (
       allOptions.singleOther = {
         ...options,
         output: singleOther,
-        external: configOption.external || ((id) => id.includes("node_modules") && !id.includes("tslib")),
+        external:
+          (typeof (configOption.external as CustomExternalOptions)?.generateExternal === "function"
+            ? // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              (configOption.external as CustomExternalOptions).generateExternal("singleOther")
+            : (configOption.external as ExternalOption)) || ((id) => id.includes("node_modules") && !id.includes("tslib")),
         plugins: plugins,
       };
     }

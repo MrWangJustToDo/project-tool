@@ -15,6 +15,8 @@ export type CustomOutput = OutputOptions & {
   type?: boolean;
 };
 
+export type CustomExternalOptions = { generateExternal: (type: keyof Options["plugins"]) => RollupOptions["external"] };
+
 export interface RollupOptions extends InputOptions {
   pkgName?: string;
   emitType?: boolean;
@@ -59,7 +61,7 @@ export type Options = {
   packageName: string;
   alias?: string;
   packageScope?: string;
-  external?: RollupOptions["external"];
+  external?: RollupOptions["external"] | CustomExternalOptions;
   multipleNameTransform?: (name: string, mode: Mode) => string;
   plugins?: {
     singleOther?: ExternalPlugins;

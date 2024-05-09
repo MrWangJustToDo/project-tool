@@ -1035,7 +1035,7 @@ var tsConfig = function (absolutePath, mode, type) {
 };
 var transformMultipleBuildConfig = function (options, packageFileObject, absolutePath, mode, configOption) {
     var _a, _b;
-    var _c, _d, _e, _f;
+    var _c, _d, _e, _f, _g, _h;
     var allOptions = {};
     if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
         options.input = resolve(absolutePath, options.input);
@@ -1126,7 +1126,11 @@ var transformMultipleBuildConfig = function (options, packageFileObject, absolut
                     },
                 })
                 : defaultPlugins;
-            allOptions.multipleOther = __assign(__assign({}, options), { output: multipleOtherConfig, external: configOption.external || (function (id) { return id.includes("node_modules") && !id.includes("tslib"); }), plugins: plugins });
+            allOptions.multipleOther = __assign(__assign({}, options), { output: multipleOtherConfig, external: (typeof ((_e = configOption.external) === null || _e === void 0 ? void 0 : _e.generateExternal) === "function"
+                    ? // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        (_f = configOption.external) === null || _f === void 0 ? void 0 : _f.generateExternal(mode === "development" ? "multipleDevOther" : "multipleProdOther")
+                    : configOption.external) || (function (id) { return id.includes("node_modules") && !id.includes("tslib"); }), plugins: plugins });
         }
         if (multipleUMDConfig.length) {
             var currentTsConfig = tsConfig(absolutePath);
@@ -1134,7 +1138,7 @@ var transformMultipleBuildConfig = function (options, packageFileObject, absolut
                 currentTsConfig = tsConfig(absolutePath, mode, "type");
             }
             multipleUMDConfig.forEach(function (config) { return delete config.type; });
-            var pluginsBuilder = mode === "development" ? (_e = configOption.plugins) === null || _e === void 0 ? void 0 : _e.multipleDevUMD : (_f = configOption.plugins) === null || _f === void 0 ? void 0 : _f.multipleProdUMD;
+            var pluginsBuilder = mode === "development" ? (_g = configOption.plugins) === null || _g === void 0 ? void 0 : _g.multipleDevUMD : (_h = configOption.plugins) === null || _h === void 0 ? void 0 : _h.multipleProdUMD;
             var defaultPlugins = [
                 nodeResolve(),
                 commonjs({ exclude: "node_modules" }),
@@ -1181,7 +1185,7 @@ var transformMultipleBuildConfig = function (options, packageFileObject, absolut
     return allOptions;
 };
 var transformSingleBuildConfig = function (options, packageFileObject, absolutePath, configOption) {
-    var _a, _b;
+    var _a, _b, _c;
     var allOptions = {};
     if (typeof options.input === "string" && !options.input.startsWith(absolutePath)) {
         options.input = resolve(absolutePath, options.input);
@@ -1252,14 +1256,18 @@ var transformSingleBuildConfig = function (options, packageFileObject, absoluteP
                     },
                 })
                 : defaultPlugins;
-            allOptions.singleOther = __assign(__assign({}, options), { output: singleOther, external: configOption.external || (function (id) { return id.includes("node_modules") && !id.includes("tslib"); }), plugins: plugins });
+            allOptions.singleOther = __assign(__assign({}, options), { output: singleOther, external: (typeof ((_b = configOption.external) === null || _b === void 0 ? void 0 : _b.generateExternal) === "function"
+                    ? // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        configOption.external.generateExternal("singleOther")
+                    : configOption.external) || (function (id) { return id.includes("node_modules") && !id.includes("tslib"); }), plugins: plugins });
         }
         if (singleUMD.length) {
             var currentTsConfig = tsConfig(absolutePath);
             if (singleUMD.some(function (config) { return config.type; })) {
                 currentTsConfig = tsConfig(absolutePath, "process.env", "type");
             }
-            var pluginsBuilder = (_b = configOption.plugins) === null || _b === void 0 ? void 0 : _b.singleDevUMD;
+            var pluginsBuilder = (_c = configOption.plugins) === null || _c === void 0 ? void 0 : _c.singleDevUMD;
             var defaultPlugins = [
                 nodeResolve(),
                 commonjs({ exclude: "node_modules" }),
