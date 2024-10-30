@@ -1,6 +1,5 @@
 import axios from "axios";
 
-import { fetchAdapter } from "./adapter";
 import { serverLog } from "./Interceptor";
 
 import type { BaseCreateOptions, RequestInterceptor, ResponseInterceptor } from "./type";
@@ -21,7 +20,7 @@ function createRequest({
   const axiosInstance = axios.create({
     method,
     timeout,
-    adapter: fetchAdapter,
+    adapter: 'fetch',
     ...axiosConfig,
   });
 

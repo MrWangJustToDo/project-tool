@@ -1,5 +1,5 @@
-import type { AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from "axios";
-export type RequestInterceptor = Parameters<AxiosInterceptorManager<AxiosRequestConfig>["use"]>[];
+import type { AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
+export type RequestInterceptor = Parameters<AxiosInterceptorManager<InternalAxiosRequestConfig>["use"]>[];
 export type ResponseInterceptor = Parameters<AxiosInterceptorManager<AxiosResponse>["use"]>[];
 export type BaseCreateOptions = AxiosRequestConfig & {
     requestInterceptors?: RequestInterceptor;
