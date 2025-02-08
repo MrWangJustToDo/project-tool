@@ -38,11 +38,11 @@ const checkFileExist = (path: string) => {
     .catch(() => false);
 };
 
-const tsConfig = (absolutePath: string, mode: Mode, type?: "type") => {
+const tsConfig = (absolutePath: string, mode: Mode, sourceMap: boolean, type?: "type") => {
   return typescript({
     cacheDir: resolve(absolutePath, ".cache"),
     tsconfig: resolve(absolutePath, "tsconfig.json"),
-    sourceMap: true,
+    sourceMap,
     declaration: type === "type" ? true : false,
     declarationMap: type === "type" ? true : false,
     declarationDir: type === "type" ? resolve(absolutePath, "dist/types") : null,
@@ -116,14 +116,18 @@ const transformMultipleBuildConfig = (
     };
 
     if (multipleOtherConfig.length) {
-      let currentTsConfig = tsConfig(absolutePath, mode);
+      const multipleOtherSourceMap = !!multipleOtherConfig.some((config) => config.sourcemap);
+
+      let currentTsConfig = tsConfig(absolutePath, mode, multipleOtherSourceMap);
+
       if (mode === "development" && multipleOtherConfig.some((config) => config.type)) {
-        currentTsConfig = tsConfig(absolutePath, mode, "type");
+        currentTsConfig = tsConfig(absolutePath, mode, multipleOtherSourceMap, "type");
       }
 
       multipleOtherConfig.forEach((config) => delete config.type);
 
       const pluginsBuilder = mode === "development" ? configOption.plugins?.multipleDevOther : configOption.plugins?.multipleProdOther;
+
       const defaultPlugins = [
         nodeResolve(),
         commonjs({ exclude: "node_modules" }),
@@ -168,16 +172,18 @@ const transformMultipleBuildConfig = (
             ? // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
               (configOption.external as CustomExternalOptions)?.generateExternal(mode === "development" ? "multipleDevOther" : "multipleProdOther")
-            : (configOption.external as ExternalOption)) || ((id) => id.includes("node_modules") && !id.includes("tslib")),
+            : (configOption.external as ExternalOption)) || ((id) => id.includes("node_modules") && !id.includes("node_modules/tslib")),
         plugins: plugins,
       };
     }
 
     if (multipleUMDConfig.length) {
-      let currentTsConfig = tsConfig(absolutePath, mode);
+      const multipleUMDSourceMap = !!multipleUMDConfig.some((config) => config.sourcemap);
+
+      let currentTsConfig = tsConfig(absolutePath, mode, multipleUMDSourceMap);
 
       if (mode === "development" && multipleUMDConfig.some((config) => config.type)) {
-        currentTsConfig = tsConfig(absolutePath, mode, "type");
+        currentTsConfig = tsConfig(absolutePath, mode, multipleUMDSourceMap, "type");
       }
 
       multipleUMDConfig.forEach((config) => delete config.type);
@@ -287,9 +293,12 @@ const transformSingleBuildConfig = (
     };
 
     if (singleOther.length) {
-      let currentTsConfig = tsConfig(absolutePath, "process.env");
+      const singleOtherSourceMap = !!singleOther.some((config) => config.sourcemap);
+
+      let currentTsConfig = tsConfig(absolutePath, "process.env", singleOtherSourceMap);
+
       if (singleOther.some((config) => config.type)) {
-        currentTsConfig = tsConfig(absolutePath, "process.env", "type");
+        currentTsConfig = tsConfig(absolutePath, "process.env", singleOtherSourceMap, "type");
       }
 
       singleOther.forEach((config) => delete config.type);
@@ -339,18 +348,25 @@ const transformSingleBuildConfig = (
             ? // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
               (configOption.external as CustomExternalOptions).generateExternal("singleOther")
-            : (configOption.external as ExternalOption)) || ((id) => id.includes("node_modules") && !id.includes("tslib")),
+            : (configOption.external as ExternalOption)) ||
+          ((id) => {
+            return id.includes("node_modules") && !id.includes("node_modules/tslib");
+          }),
         plugins: plugins,
       };
     }
 
     if (singleUMD.length) {
-      let currentTsConfig = tsConfig(absolutePath, "process.env");
+      const singleUMDSourceMap = !!singleUMD.some((config) => config.sourcemap);
+
+      let currentTsConfig = tsConfig(absolutePath, "process.env", singleUMDSourceMap);
+
       if (singleUMD.some((config) => config.type)) {
-        currentTsConfig = tsConfig(absolutePath, "process.env", "type");
+        currentTsConfig = tsConfig(absolutePath, "process.env", singleUMDSourceMap, "type");
       }
 
       const pluginsBuilder = configOption.plugins?.singleDevUMD;
+
       const defaultPlugins = [
         nodeResolve(),
         commonjs({ exclude: "node_modules" }),

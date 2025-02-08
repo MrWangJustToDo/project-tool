@@ -24,24 +24,24 @@
         "multiple": true,
         "type": true,
         "format": "cjs",
-        "sourcemap": true
+        "sourcemap": "inline"
       },
       {
         "dir": "./dist",
         "entryFileNames": "esm/index.js",
         "format": "esm",
-        "sourcemap": true
+        "sourcemap": "inline"
       }
     ]
   },
   "dependencies": {
-    "postcss": "^8.4.47",
-    "prettier": "^3.3.3",
-    "stylelint": "^16.10.0",
-    "stylelint-config-standard": "^36.0.1",
-    "stylelint-config-standard-scss": "^13.1.0",
+    "postcss": "^8.5.1",
+    "prettier": "^3.4.2",
+    "stylelint": "^16.14.1",
+    "stylelint-config-standard": "^37.0.0",
+    "stylelint-config-standard-scss": "^14.0.0",
     "stylelint-order": "^6.0.4",
-    "stylelint-prettier": "^5.0.2",
-    "stylelint-scss": "^6.8.1"
+    "stylelint-prettier": "^5.0.3",
+    "stylelint-scss": "^6.11.0"
   }
 }

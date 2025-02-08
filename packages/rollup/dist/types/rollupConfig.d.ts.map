@@ -1,1 +1,1 @@
-{"version":3,"file":"rollupConfig.d.ts","sourceRoot":"","sources":["../../src/rollupConfig.ts"],"names":[],"mappings":"AAaA,OAAO,KAAK,EAAsB,OAAO,EAAE,aAAa,EAAyB,MAAM,QAAQ,CAAC;AAybhG,eAAO,MAAM,gBAAgB,YAAmB,OAAO;;;;;;;EAkDtD,CAAC"}
+{"version":3,"file":"rollupConfig.d.ts","sourceRoot":"","sources":["../../src/rollupConfig.ts"],"names":[],"mappings":"AAaA,OAAO,KAAK,EAAsB,OAAO,EAAE,aAAa,EAAyB,MAAM,QAAQ,CAAC;AAychG,eAAO,MAAM,gBAAgB,YAAmB,OAAO;;;;;;;EAkDtD,CAAC"}

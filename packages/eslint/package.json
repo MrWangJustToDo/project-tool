@@ -24,32 +24,32 @@
         "multiple": true,
         "type": true,
         "format": "cjs",
-        "sourcemap": true
+        "sourcemap": "inline"
       },
       {
         "dir": "./dist",
         "entryFileNames": "esm/index.js",
         "format": "esm",
-        "sourcemap": true
+        "sourcemap": "inline"
       }
     ]
   },
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-import-resolver-typescript": "^3.6.3",
+    "@typescript-eslint/eslint-plugin": "^8.23.0",
+    "@typescript-eslint/parser": "^8.23.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-import-resolver-typescript": "^3.7.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-prettier": "^5.2.1",
-    "eslint-plugin-react": "^7.37.2",
-    "eslint-plugin-react-hooks": "^4.6.2"
+    "eslint-plugin-prettier": "^5.2.3",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0"
   },
   "devDependencies": {
     "@types/eslint": "^8.56.12",
-    "@types/node": "^22.8.4",
+    "@types/node": "^22.13.1",
     "eslint": "^8.57.0",
-    "prettier": "^3.3.3",
+    "prettier": "^3.4.2",
     "typescript": "^5.3.3"
   }
 }

@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "rootDir": "src",
-    "target": "ES5"
+    "target": "ES5",
+    "module": "ESNext",
+    "moduleResolution": "bundler"
   },
   "include": ["./src"],
   "exclude": ["node_modules"]
