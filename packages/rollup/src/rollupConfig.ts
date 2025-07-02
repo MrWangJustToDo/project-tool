@@ -124,8 +124,10 @@ const transformMultipleBuildConfig = (
         const item = multipleOtherConfig.find((config) => config.type);
         const typeDir = typeof item?.typeDir === "string" ? item.dir + `${!item.typeDir ? "" : `/${item.typeDir}`}` : undefined;
         const typeConfig = typeof item?.typeConfig === "string" ? item.typeConfig : undefined;
-        delete item.typeDir;
-        delete item.typeConfig;
+        if (item) {
+          delete item.typeDir;
+          delete item.typeConfig;
+        }
         currentTsConfig = tsConfig(absolutePath, mode, multipleOtherSourceMap, "type", { dir: typeDir, config: typeConfig });
       }
 
@@ -191,8 +193,10 @@ const transformMultipleBuildConfig = (
         const item = multipleOtherConfig.find((config) => config.type);
         const typeDir = typeof item?.typeDir === "string" ? item.dir + `${!item.typeDir ? "" : `/${item.typeDir}`}` : undefined;
         const typeConfig = typeof item?.typeConfig === "string" ? item.typeConfig : undefined;
-        delete item.typeDir;
-        delete item.typeConfig;
+        if (item) {
+          delete item.typeDir;
+          delete item.typeConfig;
+        }
         currentTsConfig = tsConfig(absolutePath, mode, multipleUMDSourceMap, "type", { dir: typeDir, config: typeConfig });
       }
 
@@ -311,8 +315,10 @@ const transformSingleBuildConfig = (
         const item = singleOther.find((config) => config.type);
         const typeDir = typeof item?.typeDir === "string" ? item.dir + `${!item.typeDir ? "" : `/${item.typeDir}`}` : undefined;
         const typeConfig = typeof item?.typeConfig === "string" ? item.typeConfig : undefined;
-        delete item.typeDir;
-        delete item.typeConfig;
+        if (item) {
+          delete item.typeDir;
+          delete item.typeConfig;
+        }
         currentTsConfig = tsConfig(absolutePath, "process.env", singleOtherSourceMap, "type", { dir: typeDir, config: typeConfig });
       }
 
@@ -380,8 +386,10 @@ const transformSingleBuildConfig = (
         const item = singleUMD.find((config) => config.type);
         const typeDir = typeof item?.typeDir === "string" ? item.dir + `${!item.typeDir ? "" : `/${item.typeDir}`}` : undefined;
         const typeConfig = typeof item?.typeConfig === "string" ? item.typeConfig : undefined;
-        delete item.typeDir;
-        delete item.typeConfig;
+        if (item) {
+          delete item.typeDir;
+          delete item.typeConfig;
+        }
         currentTsConfig = tsConfig(absolutePath, "process.env", singleUMDSourceMap, "type", { dir: typeDir, config: typeConfig });
       }
 

@@ -11,6 +11,7 @@ export type CustomOutput = OutputOptions & {
     multiple?: boolean;
     type?: boolean;
     typeDir?: string;
+    typeConfig?: string;
 };
 export type CustomExternalOptions = {
     generateExternal: (type: keyof Options["plugins"]) => RollupOptions["external"];
