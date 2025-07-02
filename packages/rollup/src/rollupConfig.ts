@@ -38,14 +38,14 @@ const checkFileExist = (path: string) => {
     .catch(() => false);
 };
 
-const tsConfig = (absolutePath: string, mode: Mode, sourceMap: boolean, type?: "type") => {
+const tsConfig = (absolutePath: string, mode: Mode, sourceMap: boolean, type?: "type", dir?: string) => {
   return typescript({
     cacheDir: resolve(absolutePath, ".cache"),
     tsconfig: resolve(absolutePath, "tsconfig.json"),
     sourceMap,
     declaration: type === "type" ? true : false,
     declarationMap: type === "type" ? true : false,
-    declarationDir: type === "type" ? resolve(absolutePath, "dist/types") : null,
+    declarationDir: type === "type" ? resolve(absolutePath, dir || "dist/types") : null,
   });
 };
 
@@ -121,7 +121,9 @@ const transformMultipleBuildConfig = (
       let currentTsConfig = tsConfig(absolutePath, mode, multipleOtherSourceMap);
 
       if (mode === "development" && multipleOtherConfig.some((config) => config.type)) {
-        currentTsConfig = tsConfig(absolutePath, mode, multipleOtherSourceMap, "type");
+        const item = multipleOtherConfig.find((config) => config.type);
+        const typeDir = typeof item?.typeDir === 'string' ? item.dir + `${!item.typeDir ? "" : `/${item.typeDir}`}` : undefined;
+        currentTsConfig = tsConfig(absolutePath, mode, multipleOtherSourceMap, "type", typeDir);
       }
 
       multipleOtherConfig.forEach((config) => delete config.type);
@@ -183,7 +185,9 @@ const transformMultipleBuildConfig = (
       let currentTsConfig = tsConfig(absolutePath, mode, multipleUMDSourceMap);
 
       if (mode === "development" && multipleUMDConfig.some((config) => config.type)) {
-        currentTsConfig = tsConfig(absolutePath, mode, multipleUMDSourceMap, "type");
+        const item = multipleOtherConfig.find((config) => config.type);
+        const typeDir = typeof item?.typeDir === 'string' ? item.dir + `${!item.typeDir ? "" : `/${item.typeDir}`}` : undefined;
+        currentTsConfig = tsConfig(absolutePath, mode, multipleUMDSourceMap, "type", typeDir);
       }
 
       multipleUMDConfig.forEach((config) => delete config.type);
@@ -298,7 +302,9 @@ const transformSingleBuildConfig = (
       let currentTsConfig = tsConfig(absolutePath, "process.env", singleOtherSourceMap);
 
       if (singleOther.some((config) => config.type)) {
-        currentTsConfig = tsConfig(absolutePath, "process.env", singleOtherSourceMap, "type");
+        const item = singleOther.find((config) => config.type);
+        const typeDir = typeof item?.typeDir === 'string' ? item.dir + `${!item.typeDir ? "" : `/${item.typeDir}`}` : undefined;
+        currentTsConfig = tsConfig(absolutePath, "process.env", singleOtherSourceMap, "type", typeDir);
       }
 
       singleOther.forEach((config) => delete config.type);
@@ -362,7 +368,9 @@ const transformSingleBuildConfig = (
       let currentTsConfig = tsConfig(absolutePath, "process.env", singleUMDSourceMap);
 
       if (singleUMD.some((config) => config.type)) {
-        currentTsConfig = tsConfig(absolutePath, "process.env", singleUMDSourceMap, "type");
+        const item = singleUMD.find((config) => config.type);
+        const typeDir = typeof item?.typeDir === 'string' ? item.dir + `${!item.typeDir ? "" : `/${item.typeDir}`}` : undefined;
+        currentTsConfig = tsConfig(absolutePath, "process.env", singleUMDSourceMap, "type", typeDir);
       }
 
       const pluginsBuilder = configOption.plugins?.singleDevUMD;

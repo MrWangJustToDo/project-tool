@@ -13,6 +13,7 @@ export type Type = "cjs" | "esm" | "umd" | string;
 export type CustomOutput = OutputOptions & {
   multiple?: boolean;
   type?: boolean;
+  typeDir?: string;
 };
 
 export type CustomExternalOptions = { generateExternal: (type: keyof Options["plugins"]) => RollupOptions["external"] };
