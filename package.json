@@ -81,7 +81,7 @@
     "@project-tool/stylelint": "workspace: *",
     "@types/eslint": "^8.56.12",
     "@types/lodash": "^4.17.20",
-    "@types/node": "^22.18.9",
+    "@types/node": "^22.18.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
