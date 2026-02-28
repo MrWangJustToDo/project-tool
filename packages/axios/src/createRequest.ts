@@ -20,7 +20,7 @@ function createRequest({
   const axiosInstance = axios.create({
     method,
     timeout,
-    adapter: 'fetch',
+    adapter: "fetch",
     ...axiosConfig,
   });
 

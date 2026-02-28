@@ -1,3 +1,3 @@
-import type { ESLint } from "eslint";
-export declare const reactLint: ESLint.ConfigData;
+import type { Linter } from "eslint";
+export declare const reactLint: Linter.Config[];
 //# sourceMappingURL=react.d.ts.map

@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "rootDir": "src",
-    "target": "ES5"
+    "target": "ES5",
+    "module": "node16",
+    "moduleResolution": "node16",
   },
   "include": ["./src"],
   "exclude": ["node_modules"]
