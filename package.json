@@ -1,5 +1,5 @@
 {
-  "version": "0.2.18",
+  "version": "0.2.19",
   "license": "MIT",
   "name": "project-tool",
   "description": "a tool project to help build other project",
@@ -64,7 +64,7 @@
     "lodash": "^4.17.23",
     "pino": "^9.14.0",
     "pino-pretty": "^13.1.2",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.8",
     "prettier": "^3.8.1",
     "rollup": "^4.59.0",
     "stylelint": "^17.4.0",

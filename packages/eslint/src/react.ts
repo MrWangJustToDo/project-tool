@@ -11,8 +11,8 @@ export const reactLint: Linter.Config[] = [
   // React JSX runtime (no need to import React in scope)
   eslintPluginReact.configs.flat["jsx-runtime"],
 
-  // React hooks recommended
-  eslintPluginReactHooks.configs["recommended-latest"],
+  // React hooks recommended (flat config)
+  eslintPluginReactHooks.configs.flat["recommended-latest"],
 
   // JSX a11y recommended (flat config)
   eslintPluginJsxA11y.flatConfigs.recommended,
